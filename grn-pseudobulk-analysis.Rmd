@@ -1,0 +1,183 @@
+---
+title: "GRN Pseudobulk Analysis"
+author: "Brennan McDonald"
+date: "2024-04-02"
+output: html_document
+---
+
+```{r}
+library(tidyverse)
+library(Seurat)
+library(scCustomize)
+```
+
+
+```{r grn-curation}
+dgrn <- read.table("6-60hr Integrated UMAP/pseudobulk/dGRN.txt", sep = "\t", 
+                   col.names = c("SPU_number", "Gene", "Family", "Synonyms"))
+
+dgrn <- dgrn %>% 
+  filter(Gene != "none")
+
+options <- tibble(gene = c(NA), codes = c(NA))
+final_list <- tibble(gene = c(NA), code = c(NA))
+
+for (dgene in dgrn$Gene) {
+  name <- rownames(he.integrated@assays$RNA@counts)[grep(dgene, rownames(he.integrated@assays$RNA@counts))]
+  if (length(name) <= 1) {
+    final_list <- add_row(final_list, gene = dgene, 
+                          code = name[1])
+  } else {
+    options <- add_row(options, gene = dgene, 
+                       codes = paste(name, collapse = "; "))
+  }
+}
+
+# only genes included in the Seurat object will be used for downstream analyses
+# I used the transcript with the highest expression level for a given gene
+
+
+# Genes not found in genome: Sp-NpC2L_1, Sp-Fng, Sp-Dri, Sp-glysynk3b, Sp-Gsk3, Sp-Pmar1b, Sp-Pmar1c, Sp-Trk, Sp-GataL
+# Genes not in Seurat object: Sp-Ets4, Sp-Pax2, Sp-Eya, Sp-Pax2/5/8, Sp-Pmar1d, Sp-Nanos1, Sp-Smad2/3, Sp-HesC, Sp-Rxr
+
+write.csv(dgrn, "6-60hr Integrated UMAP/pseudobulk/dGRN_codes.csv", row.names = F)
+
+
+dgrn %>% 
+  mutate(new_code = paste(str_split_1(code, ":|-|/"), collapse = "."))
+
+dgrn$new_code <- rep(NA, length(grn$code))
+i <- 1
+for (co in dgrn$code) {
+  dgrn[i,3] <- paste(str_split_1(co, ":|-|/"), collapse = ".")
+  i <- i+1
+}
+
+write.csv(dgrn, "6-60hr Integrated UMAP/pseudobulk/dGRN_codes.csv", row.names = F)
+
+```
+
+Assignment of profile types to GRN genes
+
+```{r}
+grn <- read.csv("6-60hr Integrated UMAP/pseudobulk/dGRN_codes.csv")
+
+
+# high membership values indicates that the gene is more likely to belong to that particular cluster
+clustered_idents <- tibble(membership_val = rep(NA, length(clustered$membership[,1])))
+
+for (i in 1:length(clustered$membership[,1])) {
+  clustered_idents[i,1] <- max(clustered$membership[i,])
+}
+clustered_idents$cluster_call <- as.vector(clustered$cluster)
+rownames(clustered_idents) <- names(clustered$cluster)
+
+# matching GRN genes to their assigned cluster identities
+grn$cluster <- rep(NA, length(grn$new_code))
+grn$cluster_membership_val <- rep(NA, length(grn$new_code))
+for (i in 1:length(grn$new_code)) {
+  grn[i,4] <- clustered_idents[grn[i,3],2]
+  grn[i,5] <- clustered_idents[grn[i,3],1]
+}
+
+grn %>% 
+  group_by(cluster) %>% 
+  summarize(n = n())
+
+#write.csv(grn, "6-60hr Integrated UMAP/pseudobulk/dGRN_clusters.csv")
+
+
+###############
+
+exp_grn <- read.csv("6-60hr Integrated UMAP/pseudobulk/dGRN_expression_patterns.csv")
+
+# sum number of grn genes in each cluster depending on the shape of the expression profile
+exp_early <- c(3,5,8)
+exp_middle <- c(1,6,7)
+exp_late <- c(2,4,9)
+exp_grn$high_expression <- rep(NA, length(exp_grn$code))
+for (i in 1:length(grn$code)) {
+  if (exp_grn[i,4] %in% exp_early) {
+    exp_grn[i,6] <- "High Early"
+  } else if (exp_grn[i,4] %in% exp_middle) {
+    exp_grn[i,6] <- "High Middle"
+  } else if (exp_grn[i,4] %in% exp_late) {
+    exp_grn[i,6] <- "High Late"
+  }
+}
+
+write.csv(grn, "6-60hr Integrated UMAP/pseudobulk/dGRN_expression_patterns.csv")
+```
+
+
+```{r}
+CreateSeuratObject(load(
+  file = "6-60hr\ Integrated\ UMAP/HE_6-60hpf_integrated-SCT6k_195dim.Rda", 
+                        verbose = T))
+```
+
+
+```{r}
+# Identify the highest expressed genes in the GRN in each of the time frames,
+# using the genes that have the highest average expression in any cell type
+high_grn <- c()
+exp_grn$max_exp <- rep(NA, length(exp_grn$gene))
+i = 1
+for (gene in exp_grn$code) {
+  av_exp = AverageExpression(he.integrated, features = gene)
+  if (max(av_exp$RNA@x) > 10000) {
+    high_grn <- c(high_grn, gene)
+  }
+  exp_grn[i,9] <- max(av_exp$RNA@x)
+  i = i+1
+}
+
+exp_grn %>% 
+  filter(code %in% high_grn) %>% 
+  group_by(high_expression) %>% 
+  summarize(n = n())
+
+# Highlight this subset in the plot
+high_exp <- exp_grn %>% 
+  filter(!is.na(cluster)) %>% 
+  distinct(code, .keep_all = T) %>% 
+  group_by(high_expression) %>% 
+  slice_max(n = 10, order_by = max_exp)
+
+```
+
+
+#############################
+**For the final figure plot**
+#############################
+
+```{r}
+plot_tfs <- mfuzz_tfs %>% 
+  select(seurat_code, high_expression) %>% 
+  mutate(type = "TF")
+
+plot_grn <- grn %>% 
+  filter(!is.na(high_expression)) %>% 
+  select(code, high_expression) %>% 
+  rename(seurat_code = code) %>% 
+  mutate(type = "GRN")
+
+plot_genes <- plot_tfs %>% 
+  full_join(plot_grn)
+
+plot_genes$high_expression <- factor(plot_genes$high_expression,
+                              levels = c("High Early", "High Middle", "High Late"))
+
+plot_genes %>% 
+  group_by(type, high_expression) %>% 
+  summarize(n = n()) %>% 
+  ggplot(aes(x = high_expression, y = n, fill = type)) +
+  geom_col(width = 0.4, position = "dodge") +
+  #geom_text(aes(label = n), position = "dodge") +
+  theme_bw() +
+  scale_fill_discrete(type = c("darkblue", "darkgray"), 
+                      name = "Gene\nCategory") +
+  labs(x = "Time of Highest Expression",
+       y = "Number of Genes")
+```
+

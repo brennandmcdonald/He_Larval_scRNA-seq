@@ -1,0 +1,66 @@
+---
+title: "InterProScan Output Processing"
+author: "Brennan McDonald"
+date: "2024-04-03"
+output: html_document
+---
+
+```{r}
+library(tidyverse)
+library(AnnotationForge)
+```
+
+# Make an orgdb package for HE
+
+
+```{r}
+# import dataframes used to build database
+go <- read.delim("/Users/brennandmcdonald/Documents/Wray Lab/scRNA-seq Project/TF identification/export/Hery_peptide_models.fasta_gaf.txt")
+
+anno <- read.delim("/Users/brennandmcdonald/Documents/Wray Lab/Genomes/ATAC-seq Data/Genome Annotations/H_ery_SPU_hits_best.txt")
+```
+
+```{r}
+# modify dataframes for input. a `GID` (gene ID) column needs to be the same across all of them
+
+go <- go %>% 
+  mutate(GID = DB_Object_ID, .before = Database)
+
+anno <- anno %>% 
+  mutate(GID = H_ery_ID, .before = H_ery_ID) %>% 
+  rename(SPU_hit = SPU.hit, SPU_pident = SPU.pident, SPU_evalue = SPU.evalue,
+         SPU_common_name = SPU.common_name, SPU_family = SPU.family,
+         SPU_description = SPU.description)
+
+anno$SPU_common_name <- replace(anno$SPU_common_name, is.na(anno$SPU_common_name), "NA")
+anno$SPU_family <- replace(anno$SPU_family, is.na(anno$SPU_family), "NA")
+anno$SPU_description <- replace(anno$SPU_description, is.na(anno$SPU_description), "NA")
+
+go_extra <- go %>% 
+  select(GID, GO_ID, Evidence_Code) %>% 
+  rename(GO = GO_ID, EVIDENCE = Evidence_Code)
+```
+
+```{r}
+makeOrgPackage(gene_info=anno, go=go_extra, 
+               version = "1.0.0",
+               maintainer = "Brennan McDonald <bdm50@duke.edu>",
+               author = "Brennan McDonald <bdm50@duke.edu>",
+               outputDir = "/Users/brennandmcdonald/Documents/Wray Lab/scRNA-seq Project/TF identification",
+               tax_id = "7634",
+               genus = "Heliocidaris",
+               species = "erythrogramma",
+               goTable = "go",
+               verbose = T)
+
+install.packages("/Users/brennandmcdonald/Documents/Wray Lab/scRNA-seq Project/TF identification/org.Herythrogramma.eg.db", repos = NULL)
+```
+
+```{r}
+library(org.Herythrogramma.eg.db)
+```
+
+
+
+
+

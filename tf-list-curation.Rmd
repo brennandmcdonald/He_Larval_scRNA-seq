@@ -1,0 +1,80 @@
+---
+title: "Curated TF List"
+author: "Brennan McDonald"
+date: "2024-04-03"
+output: html_document
+---
+
+```{r}
+library(tidyverse)
+library(org.Herythrogramma.eg.db)
+library(clusterProfiler)
+```
+
+
+
+Filter gene GO annotations for GO IDs corresponding to, or below "Transcription regulator activity"
+GO terms to use (all under Molecular Function):
+- GO:0003700 DNA-binding transcription factor activity
+- GO:0001216 DNA-binding transcription activator activity
+- GO:0001227 DNA-binding transcription repressor activity, RNA polymerase II-specific
+- GO:0001228 DNA-binding transcription activator activity, RNA polymerase II-specific
+- GO:0000981 DNA-binding transcription factor activity, RNA polymerase II-specific
+- GO:0001217 DNA-binding transcription repressor activity
+
+- GO:0140110 transcription regulator activity (this may be too general, includes non-DNA binding terms)
+
+Biological process
+- GO:0006355 regulation of DNA-templated transcription
+- GO:0010468 regulation of gene expression
+
+https://amigo.geneontology.org/amigo/term/GO:0140110
+GO terms from this paper: https://www.sciencedirect.com/science/article/pii/S1874939921000705
+
+```{r}
+keytypes(org.Herythrogramma.eg.db)
+
+k <- keys(org.Herythrogramma.eg.db, keytype = "SPU_common_name")
+
+# Filter the gene list for genes with GO terms that have molecular functions related to DNA binding transcriptional regulation
+tfs <- AnnotationDbi::select(org.Herythrogramma.eg.db, keys = k, 
+                      columns = c("GO", "SPU_description", "GID", "SPU_hit"),
+                      keytype = "SPU_common_name") %>% 
+  dplyr::filter(GO %in% c("GO:0003700", "GO:0001216", "GO:0001227", "GO:0001228", "GO:0000981", "GO:0001217")) %>% 
+  distinct(SPU_common_name, .keep_all = T)
+```
+
+
+```{r}
+# list of Echinobase genes from Hannah
+han <- read.csv("functional_category_table.csv", row.names = NULL)
+
+# filter list for SPU_hits listed as TranscriptionFactors or ZincFingers
+han_tf <- han %>% 
+  filter(Function == "TranscriptionFactor")
+
+han_zf <- han %>% 
+  filter(Function == "ZincFinger")
+
+# Collect the SPU_hits
+han_tf_keys <- han_tf$Gene
+han_zf_keys <- han_zf$Gene
+
+# Merge the SPU hits from the GO term list and Hannah's list into union sets
+un_tf <- union(han_tf_keys, tfs$SPU_hit)
+un_zf <- union(han_zf_keys, tfs$SPU_hit)
+un_all <- union(un_tf, un_zf)
+
+# create a full list of the genes using both the GO terms and Hannah's list
+han_go_tfs <- AnnotationDbi::select(org.Herythrogramma.eg.db, keys = un_all, 
+                      columns = c("SPU_common_name", "GO", "SPU_description", "GID", "SPU_hit"),
+                      keytype = "SPU_hit") %>% 
+  distinct(GID, .keep_all = T) %>% # filter for distinct HER transcripts
+  filter(!is.na(GID))
+
+#write.csv(han_go_tfs, "6-60hr Integrated UMAP/pseudobulk/hannah-and-go-term_tf-list.csv",
+#          row.names = F)
+```
+
+
+

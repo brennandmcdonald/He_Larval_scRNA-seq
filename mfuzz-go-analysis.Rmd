@@ -1,0 +1,81 @@
+---
+title: "GO Analysis"
+author: "Brennan McDonald"
+date: "2024-04-03"
+output: html_document
+---
+
+# GO over representation analysis
+
+For analyzing what genes are enriched in each expression profile cluster
+
+```{r}
+library(clusterProfiler)
+library(org.Herythrogramma.eg.db)
+library(ggplot2)
+library(dplyr)
+library(enrichplot)
+
+#install.packages("/Users/brennandmcdonald/Documents/Wray Lab/scRNA-seq Project/TF identification/org.Herythrogramma.eg.db", repos = NULL)
+```
+
+```{r}
+cluster_inputs <- read.csv("6-60hr Integrated UMAP/pseudobulk/go_cluster_inputs.csv")
+
+
+cluster_inputs %>% 
+  group_by(clusters) %>% 
+  summarize(n = n())
+```
+
+```{r}
+# compare enriched categories across the different Mfuzz clusters
+cluster_list <- list()
+for (c in 1:9) {
+  genes <- cluster_inputs %>% 
+    filter(clusters == c) %>% 
+    dplyr::select(GID)
+  name <- paste("c", as.character(c), sep = "")
+  cluster_list[[name]] <- genes[,1]
+}
+
+
+cl_compare <- compareCluster(geneClusters = cluster_list,
+                             fun = "enrichGO",
+                             OrgDb = org.Herythrogramma.eg.db,
+                             keyType = "GID",
+                             ont = "BP",
+                             pvalueCutoff = 0.05,
+                             pAdjustMethod = "BH",
+                             qvalueCutoff = 0.2)
+
+cl_compare@compareClusterResult %>% 
+  filter(ID == "GO:0008134")
+
+cl_compare@compareClusterResult %>% View()
+
+enrichplot::dotplot(cl_compare)
+
+cl_similarities <- enrichplot::pairwise_termsim(cl_compare)
+
+enrichplot::treeplot(cl_similarities, showCategory = 5)
+
+enrichplot::emapplot(cl_similarities)
+
+
+#############
+# used this for the plot in the figure
+simp_cl_compare <- gofilter(cl_compare, level = 4)
+simp_cl_similarities <- pairwise_termsim(simp_cl_compare)
+treeplot(simp_cl_similarities, showCategory = 4)
+##################
+
+simp_cl_compare <- simplify(cl_compare, cutoff = 0.9)
+simp_cl_similarities <- pairwise_termsim(simp_cl_compare)
+treeplot(simp_cl_similarities, showCategory = 4)
+```
+
+
+
+
+

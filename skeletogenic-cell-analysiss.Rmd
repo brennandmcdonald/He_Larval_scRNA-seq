@@ -1,0 +1,673 @@
+---
+title: "Skeletogenic Cell Analysis"
+author: "Brennan McDonald"
+date: "2024-04-03"
+output: html_document
+---
+
+```{r}
+library(tidyverse)
+library(Seurat)
+```
+
+```{r}
+CreateSeuratObject(load(
+  file = "6-60hr\ Integrated\ UMAP/HE_6-60hpf_integrated-SCT6k_195dim.Rda", 
+                        verbose = T))
+```
+
+```{r}
+lv.integrated <- readRDS("/Users/brennandmcdonald/Documents/Wray Lab/Alejo/hery_rds/control.rds")
+```
+
+```{r}
+library(scCustomize)
+
+# Export as 6x8 for figure 3
+Cluster_Highlight_Plot(seurat_object = he.integrated,
+                       cluster_name = "Skeletal",
+                       highlight_color = "red",
+                       pt.size = 0.3) +
+  theme(legend.position = "none")
+```
+
+
+
+# Custom coexpression plots
+
+```{r}
+umap_coords <- as_tibble(Embeddings(he.integrated, reduction = "umap"))
+umap_coords$Cell <- rownames(Embeddings(he.integrated, reduction = "umap"))
+```
+
+```{r}
+coexp_plot <- function(coords, low_exp, high_exp) {
+  coords1 <- coords %>% 
+    mutate(Expression = case_when(Cell %in% low_exp ~ "Low Coexpression",
+                                  .default = "No Coexpression")) %>% 
+    mutate(Expression = if_else(Cell %in% high_exp, "High Coexpression", Expression))
+    
+  coords1$Expression <- factor(coords1$Expression, 
+         levels = c("No Coexpression", "Low Coexpression", "High Coexpression"))
+  
+  coords1 %>%   
+    arrange(Expression) %>% 
+    ggplot(mapping = aes(x = UMAP_1, y = UMAP_2, 
+                         color = Expression)) +
+    geom_point(size = 0.3) +
+    scale_color_discrete(type = c("gray", "lightgreen", "darkgreen")) +
+    labs(color = "Coexpression Level") +
+    theme_classic() +
+    theme(legend.position = "none")
+}
+```
+
+
+```{r}
+# Alx1 and Scl
+
+alx_scl1_t05 <- WhichCells(he.integrated, 
+                      expression = `HER-12794.t1.1.5f2c6949:Sp-Alx1` >= 0.5 &
+                        `HER-5916.t1:Sp-Scl` >= 0.5)
+alx_scl1_t1 <- WhichCells(he.integrated, 
+                      expression = `HER-12794.t1.1.5f2c6949:Sp-Alx1` >= 1 & 
+                        `HER-5916.t1:Sp-Scl` >= 1)
+
+alx_scl2_t05 <- WhichCells(he.integrated, 
+                      expression = `HER-12794.t1.2.5f2c6949:Sp-Alx1` >= 0.5 &
+                        `HER-5916.t1:Sp-Scl` >= 0.5)
+alx_scl2_t1 <- WhichCells(he.integrated, 
+                      expression = `HER-12794.t1.2.5f2c6949:Sp-Alx1` >= 1 & 
+                        `HER-5916.t1:Sp-Scl` >= 1)
+
+alx_scl_t05_merge <- union(alx_scl1_t05, alx_scl2_t05)
+alx_scl_t1_merge <- union(alx_scl1_t1, alx_scl2_t1)
+
+# Export as 6x8.5 for figure 3
+coexp_plot(coords = umap_coords, 
+           low_exp = alx_scl_t05_merge, 
+           high_exp = alx_scl_t1_merge)
+```
+
+
+```{r}
+# alx1 and ese
+alx_ese1_t05 <- WhichCells(he.integrated, 
+                      expression = `HER-12794.t1.1.5f2c6949:Sp-Alx1` >= 0.5 & 
+                        `HER-12631.t1:Sp-Ese` >= 0.5)
+alx_ese1_t1 <- WhichCells(he.integrated, 
+                      expression = `HER-12794.t1.1.5f2c6949:Sp-Alx1` >= 1 & 
+                        `HER-12631.t1:Sp-Ese` >= 1)
+
+alx_ese2_t05 <- WhichCells(he.integrated, 
+                      expression = `HER-12794.t1.2.5f2c6949:Sp-Alx1` >= 0.5 & 
+                        `HER-12631.t1:Sp-Ese` >= 0.5)
+alx_ese2_t1 <- WhichCells(he.integrated, 
+                      expression = `HER-12794.t1.2.5f2c6949:Sp-Alx1` >= 1 & 
+                        `HER-12631.t1:Sp-Ese` >= 1)
+
+alx_ese_t05_merge <- union(alx_ese1_t05, alx_ese2_t05)
+alx_ese_t1_merge <- alx_ese2_t1
+
+
+coexp_plot(coords = umap_coords, 
+           low_exp = alx_ese_t05_merge, 
+           high_exp = alx_ese_t1_merge)
+```
+
+```{r}
+# alx1 and GataC
+alx_gc1_t05 <- WhichCells(he.integrated, 
+                      expression = `HER-12794.t1.1.5f2c6949:Sp-Alx1` >= 0.5 &
+                        `HER-38449.t1:Sp-GataC` >= 0.5)
+alx_gc1_t1 <- WhichCells(he.integrated, 
+                      expression = `HER-12794.t1.1.5f2c6949:Sp-Alx1` >= 1 & 
+                        `HER-38449.t1:Sp-GataC` >= 1)
+
+alx_gc2_t05 <- WhichCells(he.integrated, 
+                      expression = `HER-12794.t1.2.5f2c6949:Sp-Alx1` >= 0.5 & 
+                        `HER-38449.t1:Sp-GataC` >= 0.5)
+alx_gc2_t1 <- WhichCells(he.integrated, 
+                      expression = `HER-12794.t1.2.5f2c6949:Sp-Alx1` >= 1 & 
+                        `HER-38449.t1:Sp-GataC` >= 1)
+
+alx_gc_t05_merge <- union(alx_gc1_t05, alx_gc2_t05)
+alx_gc_t1_merge <- union(alx_gc1_t1, alx_gc2_t1)
+
+
+coexp_plot(coords = umap_coords, 
+           low_exp = alx_gc_t05_merge, 
+           high_exp = alx_gc_t1_merge)
+```
+
+
+```{r}
+# Alx1 and Tbr
+alx_tbr1_t05 <- WhichCells(he.integrated, 
+                      expression = `HER-12794.t1.1.5f2c6949:Sp-Alx1` >= 0.5 & 
+                        `HER-21600.t1:Sp-Tbr` >= 0.5)
+alx_tbr1_t1 <- WhichCells(he.integrated, 
+                      expression = `HER-12794.t1.1.5f2c6949:Sp-Alx1` >= 1 & 
+                        `HER-21600.t1:Sp-Tbr` >= 1)
+
+alx_tbr2_t05 <- WhichCells(he.integrated, 
+                      expression = `HER-12794.t1.2.5f2c6949:Sp-Alx1` >= 0.5 & 
+                        `HER-21600.t1:Sp-Tbr` >= 0.5)
+alx_tbr2_t1 <- WhichCells(he.integrated, 
+                      expression = `HER-12794.t1.2.5f2c6949:Sp-Alx1` >= 1 & 
+                        `HER-21600.t1:Sp-Tbr` >= 1)
+
+alx_tbr_t05_merge <- union(alx_tbr1_t05, alx_tbr2_t05)
+alx_tbr_t1_merge <- c()
+
+
+coexp_plot(coords = umap_coords, 
+           low_exp = alx_tbr_t05_merge, 
+           high_exp = alx_tbr_t1_merge)
+```
+
+```{r}
+# Alx1 and FoxO
+alx_foxo1_t05 <- WhichCells(he.integrated, 
+                      expression = `HER-12794.t1.1.5f2c6949:Sp-Alx1` >= 0.5 & 
+                        `HER-35682.t1:Sp-FoxO-1` >= 0.5)
+alx_foxo1_t1 <- WhichCells(he.integrated, 
+                      expression = `HER-12794.t1.1.5f2c6949:Sp-Alx1` >= 1 & 
+                        `HER-35682.t1:Sp-FoxO-1` >= 1)
+
+alx_foxo2_t05 <- WhichCells(he.integrated, 
+                      expression = `HER-12794.t1.2.5f2c6949:Sp-Alx1` >= 0.5 & 
+                        `HER-35682.t1:Sp-FoxO-1` >= 0.5)
+alx_foxo2_t1 <- WhichCells(he.integrated, 
+                      expression = `HER-12794.t1.2.5f2c6949:Sp-Alx1` >= 1 & 
+                        `HER-35682.t1:Sp-FoxO-1` >= 1)
+
+alx_foxo_t05_merge <- union(alx_foxo1_t05, alx_foxo2_t05)
+alx_foxo_t1_merge <- c(alx_foxo2_t1)
+
+
+coexp_plot(coords = umap_coords, 
+           low_exp = alx_foxo_t05_merge, 
+           high_exp = alx_foxo_t1_merge)
+```
+
+
+```{r}
+# Alx1 and FoxB
+alx_foxb1_t05 <- WhichCells(he.integrated, 
+                      expression = `HER-12794.t1.1.5f2c6949:Sp-Alx1` >= 0.5 & 
+                        `HER-11066.t1:Sp-FoxB` >= 0.5)
+alx_foxb1_t1 <- WhichCells(he.integrated, 
+                      expression = `HER-12794.t1.1.5f2c6949:Sp-Alx1` >= 1 & 
+                        `HER-11066.t1:Sp-FoxB` >= 1)
+
+alx_foxb2_t05 <- WhichCells(he.integrated, 
+                      expression = `HER-12794.t1.2.5f2c6949:Sp-Alx1` >= 0.5 & 
+                        `HER-11066.t1:Sp-FoxB` >= 0.5)
+alx_foxb2_t1 <- WhichCells(he.integrated, 
+                      expression = `HER-12794.t1.2.5f2c6949:Sp-Alx1` >= 1 & 
+                        `HER-11066.t1:Sp-FoxB` >= 1)
+
+alx_foxb_t05_merge <- union(alx_foxb1_t05, alx_foxb2_t05)
+alx_foxb_t1_merge <- c()
+
+
+coexp_plot(coords = umap_coords, 
+           low_exp = alx_foxb_t05_merge, 
+           high_exp = alx_foxb_t1_merge)
+```
+
+```{r}
+# Alx1 and Tel
+alx_tel1_t05 <- WhichCells(he.integrated, 
+                      expression = `HER-12794.t1.1.5f2c6949:Sp-Alx1` >= 0.5 & 
+                        `HER-12611.t1:Sp-Tel` >= 0.5)
+alx_tel1_t1 <- WhichCells(he.integrated, 
+                      expression = `HER-12794.t1.1.5f2c6949:Sp-Alx1` >= 1 & 
+                        `HER-12611.t1:Sp-Tel` >= 1)
+
+alx_tel2_t05 <- WhichCells(he.integrated, 
+                      expression = `HER-12794.t1.2.5f2c6949:Sp-Alx1` >= 0.5 & 
+                        `HER-12611.t1:Sp-Tel` >= 0.5)
+alx_tel2_t1 <- WhichCells(he.integrated, 
+                      expression = `HER-12794.t1.2.5f2c6949:Sp-Alx1` >= 1 & 
+                        `HER-12611.t1:Sp-Tel` >= 1)
+
+alx_tel_t05_merge <- union(alx_tel1_t05, alx_tel2_t05)
+alx_tel_t1_merge <- union(alx_tel1_t1, alx_tel2_t1)
+
+
+coexp_plot(coords = umap_coords, 
+           low_exp = alx_tel_t05_merge, 
+           high_exp = alx_tel_t1_merge)
+```
+
+
+# Count numbers of coexpressing cells in the skeletal lineage
+
+```{r}
+# number of Alx1 expressing cells
+
+alx_1 <- WhichCells(he.integrated, 
+                       expression = `HER-12794.t1.1.5f2c6949:Sp-Alx1` >= 0.5,
+                       idents = "Skeletal")
+alx_2 <- WhichCells(he.integrated, 
+                       expression = `HER-12794.t1.2.5f2c6949:Sp-Alx1` >= 0.5,
+                       idents = "Skeletal")
+
+nalx <- length(union(alx_1, alx_2))
+```
+
+```{r}
+alx_scl_1 <- WhichCells(he.integrated, 
+                      expression = `HER-12794.t1.1.5f2c6949:Sp-Alx1` >= 0.5 &
+                        `HER-5916.t1:Sp-Scl` >= 0.5,
+                       idents = "Skeletal")
+alx_scl_2 <- WhichCells(he.integrated, 
+                      expression = `HER-12794.t1.2.5f2c6949:Sp-Alx1` >= 0.5 &
+                        `HER-5916.t1:Sp-Scl` >= 0.5,
+                       idents = "Skeletal")
+
+nalx_scl <- length(union(alx_scl_1, alx_scl_2))
+```
+
+```{r}
+alx_ese_1 <- WhichCells(he.integrated, 
+                      expression = `HER-12794.t1.1.5f2c6949:Sp-Alx1` >= 0.5 & 
+                        `HER-12631.t1:Sp-Ese` >= 0.5,
+                       idents = "Skeletal")
+alx_ese_2 <- WhichCells(he.integrated, 
+                      expression = `HER-12794.t1.2.5f2c6949:Sp-Alx1` >= 0.5 & 
+                        `HER-12631.t1:Sp-Ese` >= 0.5,
+                       idents = "Skeletal")
+
+nalx_ese <- length(union(alx_ese_1, alx_ese_2))
+```
+
+```{r}
+alx_gc_1 <- WhichCells(he.integrated, 
+                      expression = `HER-12794.t1.1.5f2c6949:Sp-Alx1` >= 0.5 &
+                        `HER-38449.t1:Sp-GataC` >= 0.5,
+                       idents = "Skeletal")
+alx_gc_2 <- WhichCells(he.integrated, 
+                      expression = `HER-12794.t1.2.5f2c6949:Sp-Alx1` >= 0.5 & 
+                        `HER-38449.t1:Sp-GataC` >= 0.5,
+                       idents = "Skeletal")
+
+nalx_gc <- length(union(alx_gc_1, alx_gc_2))
+```
+
+```{r}
+alx_tbr_1 <- WhichCells(he.integrated, 
+                      expression = `HER-12794.t1.1.5f2c6949:Sp-Alx1` >= 0.5 & 
+                        `HER-21600.t1:Sp-Tbr` >= 0.5,
+                       idents = "Skeletal")
+alx_tbr_2 <- WhichCells(he.integrated, 
+                      expression = `HER-12794.t1.2.5f2c6949:Sp-Alx1` >= 0.5 & 
+                        `HER-21600.t1:Sp-Tbr` >= 0.5,
+                       idents = "Skeletal")
+
+nalx_tbr <- length(union(alx_tbr_1, alx_tbr_2))
+```
+
+```{r}
+alx_foxo_1 <- WhichCells(he.integrated, 
+                      expression = `HER-12794.t1.1.5f2c6949:Sp-Alx1` >= 0.5 & 
+                        `HER-35682.t1:Sp-FoxO-1` >= 0.5,
+                       idents = "Skeletal")
+alx_foxo_2 <- WhichCells(he.integrated, 
+                      expression = `HER-12794.t1.2.5f2c6949:Sp-Alx1` >= 0.5 & 
+                        `HER-35682.t1:Sp-FoxO-1` >= 0.5,
+                       idents = "Skeletal")
+
+nalx_foxo <- length(union(alx_foxo_1, alx_foxo_2))
+```
+
+```{r}
+alx_foxb_1 <- WhichCells(he.integrated, 
+                      expression = `HER-12794.t1.1.5f2c6949:Sp-Alx1` >= 0.5 & 
+                        `HER-11066.t1:Sp-FoxB` >= 0.5,
+                       idents = "Skeletal")
+alx_foxb_2 <- WhichCells(he.integrated, 
+                      expression = `HER-12794.t1.2.5f2c6949:Sp-Alx1` >= 0.5 & 
+                        `HER-11066.t1:Sp-FoxB` >= 0.5,
+                       idents = "Skeletal")
+
+nalx_foxb <- length(union(alx_foxb_1, alx_foxb_2))
+```
+
+```{r}
+alx_tel_1 <- WhichCells(he.integrated, 
+                      expression = `HER-12794.t1.1.5f2c6949:Sp-Alx1` >= 0.5 & 
+                        `HER-12611.t1:Sp-Tel` >= 0.5,
+                       idents = "Skeletal")
+alx_tel_2 <- WhichCells(he.integrated, 
+                      expression = `HER-12794.t1.2.5f2c6949:Sp-Alx1` >= 0.5 & 
+                        `HER-12611.t1:Sp-Tel` >= 0.5,
+                       idents = "Skeletal")
+
+nalx_tel <- length(union(alx_tel_1, alx_tel_2))
+```
+
+Proportions of Alx1 expressing cells in the skeletal lineage that express a larval skeletal or NSM marker
+
+```{r}
+prop_scl <- nalx_scl/nalx
+prop_ese <- nalx_ese/nalx
+prop_gc <- nalx_gc/nalx
+prop_tbr <- nalx_tbr/nalx
+prop_tel <- nalx_tel/nalx
+prop_foxo <- nalx_foxo/nalx
+prop_foxb <- nalx_foxb/nalx
+```
+
+
+
+```{r}
+library(scCustomize)
+
+Cluster_Highlight_Plot(lv.integrated,
+                       cluster_name = c("PMCs", "Micromeres"),
+                       highlight_color = c("orange", "orange"),
+                       pt.size = 0.3) +
+  theme(legend.position = "none")
+
+lv.integrated@meta.data %>% View()
+
+
+times <- str_extract(lv.integrated@meta.data$Stage, "\\d+")
+times <- as.integer(times)
+
+unique(times)
+
+lv.integrated <- AddMetaData(lv.integrated, times, col.name = "time_int")
+
+x <- seq(10,250,14)
+viridis_plasma_dark_high[x]
+
+# Figure 3 LV time umap
+# Export as 6x8 for figure 3
+DimPlot_scCustom(lv.integrated,
+                 group.by = "time_int",
+                 colors_use = viridis_plasma_dark_high[x])# +
+  #theme(legend.position = "none")
+```
+
+
+```{r}
+lv_umap_coords <- as_tibble(Embeddings(lv.integrated, reduction = "umap"))
+lv_umap_coords$Cell <- rownames(Embeddings(lv.integrated, reduction = "umap"))
+```
+
+
+```{r}
+lv.integrated@meta.data %>% 
+  group_by(celltype) %>% 
+  summarize(n = n())
+
+DimPlot(lv.integrated, reduction = "umap", label = F, group.by = "celltype")
+DimPlot(lv.integrated, reduction = "umap", label = F, group.by = "Stage")
+```
+
+
+```{r}
+lv_scl05 <- WhichCells(lv.integrated,
+                     expression = `LVA-36418.t1:Scl` >= 0.5 &
+                       `LVA-5802.t1:Alx1` >= 0.5)
+lv_scl1 <- WhichCells(lv.integrated,
+                     expression = `LVA-36418.t1:Scl` >= 1 &
+                       `LVA-5802.t1:Alx1` >= 1)
+
+coexp_plot(coords = lv_umap_coords, 
+           low_exp = lv_scl05, 
+           high_exp = lv_scl1)
+```
+
+```{r}
+lv_ese05 <- WhichCells(lv.integrated,
+                     expression = `LVA-5105.t1:Ese` >= 0.5 &
+                       `LVA-5802.t1:Alx1` >= 0.5)
+lv_ese1 <- WhichCells(lv.integrated,
+                     expression = `LVA-5105.t1:Ese` >= 1 &
+                       `LVA-5802.t1:Alx1` >= 1)
+
+coexp_plot(coords = lv_umap_coords, 
+           low_exp = lv_ese05, 
+           high_exp = lv_ese1)
+```
+
+```{r}
+lv_gc05 <- WhichCells(lv.integrated,
+                     expression = `LVA-32108.t1:GataC` >= 0.5 &
+                       `LVA-5802.t1:Alx1` >= 0.5)
+lv_gc1 <- WhichCells(lv.integrated,
+                     expression = `LVA-32108.t1:GataC` >= 1 &
+                       `LVA-5802.t1:Alx1` >= 1)
+
+coexp_plot(coords = lv_umap_coords, 
+           low_exp = lv_gc05, 
+           high_exp = lv_gc1)
+```
+
+```{r}
+lv_tbr05 <- WhichCells(lv.integrated,
+                     expression = `LVA-12704.t1:Tbr` >= 0.5 &
+                       `LVA-5802.t1:Alx1` >= 0.5)
+lv_tbr1 <- WhichCells(lv.integrated,
+                     expression = `LVA-12704.t1:Tbr` >= 1 &
+                       `LVA-5802.t1:Alx1` >= 1)
+
+coexp_plot(coords = lv_umap_coords, 
+           low_exp = lv_tbr05, 
+           high_exp = lv_tbr1)
+```
+
+```{r}
+lv_tel05 <- WhichCells(lv.integrated,
+                     expression = `LVA-5116.t1:Tel` >= 0.5 &
+                       `LVA-5802.t1:Alx1` >= 0.5)
+lv_tel1 <- WhichCells(lv.integrated,
+                     expression = `LVA-5116.t1:Tel` >= 1 &
+                       `LVA-5802.t1:Alx1` >= 1)
+
+coexp_plot(coords = lv_umap_coords, 
+           low_exp = lv_tel05, 
+           high_exp = lv_tel1)
+```
+
+```{r}
+lv_foxo05 <- WhichCells(lv.integrated,
+                     expression = `LVA-35307.t1:FoxO-1` >= 0.5 &
+                       `LVA-5802.t1:Alx1` >= 0.5)
+lv_foxo1 <- WhichCells(lv.integrated,
+                     expression = `LVA-35307.t1:FoxO-1` >= 1 &
+                       `LVA-5802.t1:Alx1` >= 1)
+
+coexp_plot(coords = lv_umap_coords, 
+           low_exp = lv_foxo05, 
+           high_exp = lv_foxo1)
+```
+
+```{r}
+lv_foxb05 <- WhichCells(lv.integrated,
+                     expression = `LVA-21108.t1:FoxB` >= 0.5 &
+                       `LVA-5802.t1:Alx1` >= 0.5)
+lv_foxb1 <- WhichCells(lv.integrated,
+                     expression = `LVA-21108.t1:FoxB` >= 1 &
+                       `LVA-5802.t1:Alx1` >= 1)
+
+coexp_plot(coords = lv_umap_coords, 
+           low_exp = lv_foxb05, 
+           high_exp = lv_foxb1)
+```
+
+
+```{r}
+lvnalx <- length(WhichCells(lv.integrated,
+                       expression = `LVA-5802.t1:Alx1` >= 0.5,
+                     idents = c("PMCs", "Micromeres")))
+
+lvnalx_scl <- length(WhichCells(lv.integrated,
+                     expression = `LVA-36418.t1:Scl` >= 0.5 &
+                       `LVA-5802.t1:Alx1` >= 0.5,
+                     idents = c("PMCs", "Micromeres")))
+
+lvnalx_ese <- length(WhichCells(lv.integrated,
+                     expression = `LVA-5105.t1:Ese` >= 0.5 &
+                       `LVA-5802.t1:Alx1` >= 0.5,
+                     idents = c("PMCs", "Micromeres")))
+
+lvnalx_gc <- length(WhichCells(lv.integrated,
+                     expression = `LVA-32108.t1:GataC` >= 0.5 &
+                       `LVA-5802.t1:Alx1` >= 0.5,
+                     idents = c("PMCs", "Micromeres")))
+
+lvnalx_tbr <- length(WhichCells(lv.integrated,
+                     expression = `LVA-12704.t1:Tbr` >= 0.5 &
+                       `LVA-5802.t1:Alx1` >= 0.5,
+                     idents = c("PMCs", "Micromeres")))
+
+lvnalx_tel <- length(WhichCells(lv.integrated,
+                     expression = `LVA-5116.t1:Tel` >= 0.5 &
+                       `LVA-5802.t1:Alx1` >= 0.5,
+                     idents = c("PMCs", "Micromeres")))
+
+lvnalx_foxo <- length(WhichCells(lv.integrated,
+                     expression = `LVA-35307.t1:FoxO-1` >= 0.5 &
+                       `LVA-5802.t1:Alx1` >= 0.5,
+                     idents = c("PMCs", "Micromeres")))
+
+lvnalx_foxb <- length(WhichCells(lv.integrated,
+                     expression = `LVA-21108.t1:FoxB` >= 0.5 &
+                       `LVA-5802.t1:Alx1` >= 0.5,
+                     idents = c("PMCs", "Micromeres")))
+```
+
+```{r}
+lvnalx_scl/lvnalx
+lvnalx_ese/lvnalx
+lvnalx_gc/lvnalx
+
+lvnalx_tbr/lvnalx
+lvnalx_tel/lvnalx
+lvnalx_foxo/lvnalx
+lvnalx_foxb/lvnalx
+```
+
+```{r}
+# test for difference between scl-alx1 co-expression proportions between the species
+prop.test(x = c(93,323), n = c(106,2211), alternative = "two.sided")
+
+# test for difference between ese-alx1 co-expression proportions between the species
+prop.test(x = c(19,154), n = c(106,2211), alternative = "two.sided")
+
+# test for difference between gatac-alx1 co-expression proportions between the species
+prop.test(x = c(37,170), n = c(106,2211), alternative = "two.sided")
+```
+
+
+# Make plots showing number of coexpressing cells over time
+
+```{r}
+# He
+times <- str_extract(he.integrated@meta.data$Stage, "\\d+")
+times <- as.integer(times)
+
+he.integrated <- AddMetaData(he.integrated, times, col.name = "time_int")
+
+
+alx_1 <- WhichCells(he.integrated, 
+                       expression = `HER-12794.t1.1.5f2c6949:Sp-Alx1` >= 0.5,
+                       idents = "Skeletal")
+alx_2 <- WhichCells(he.integrated, 
+                       expression = `HER-12794.t1.2.5f2c6949:Sp-Alx1` >= 0.5,
+                       idents = "Skeletal")
+
+he_alx <- union(alx_1, alx_2)
+
+
+alx_scl_1 <- WhichCells(he.integrated, 
+                      expression = `HER-12794.t1.1.5f2c6949:Sp-Alx1` >= 0.5 &
+                        `HER-5916.t1:Sp-Scl` >= 0.5,
+                       idents = "Skeletal")
+alx_scl_2 <- WhichCells(he.integrated, 
+                      expression = `HER-12794.t1.2.5f2c6949:Sp-Alx1` >= 0.5 &
+                        `HER-5916.t1:Sp-Scl` >= 0.5,
+                       idents = "Skeletal")
+
+he_alx_scl <- union(alx_scl_1, alx_scl_2)
+```
+
+```{r}
+he_alx_cells <- he.integrated@meta.data %>% 
+  filter(rownames(he.integrated@meta.data) %in% he_alx) %>% 
+  group_by(time_int) %>% 
+  summarize(n = n()) %>% 
+  mutate(Genes = "Alx1")
+
+he_alx_scl_cells <- he.integrated@meta.data %>% 
+  filter(rownames(he.integrated@meta.data) %in% he_alx_scl) %>% 
+  group_by(time_int) %>% 
+  summarize(n = n()) %>% 
+  mutate(Genes = "Alx1 and Scl")
+
+he_plot <- full_join(he_alx_cells, he_alx_scl_cells)
+
+he_plot %>% 
+  ggplot(mapping = aes(x = time_int, y = n, fill = Genes)) +
+  geom_col(position = "dodge") +
+  scale_x_continuous(breaks = c(12, 16, 20, 24, 30, 36, 42, 48, 54, 60)) +
+  scale_fill_manual(values = c("Alx1" = "darkgray", "Alx1 and Scl" = "darkgreen"))+
+  theme_bw() +
+  labs(x = "Hours Post Fertilization",
+       y = "Number of Cells")
+```
+
+
+
+```{r}
+# LV
+times <- str_extract(lv.integrated@meta.data$Stage, "\\d+")
+times <- as.integer(times)
+
+lv.integrated <- AddMetaData(lv.integrated, times, col.name = "time_int")
+
+
+lv_alx <- WhichCells(lv.integrated,
+                       expression = `LVA-5802.t1:Alx1` >= 0.5,
+                     idents = c("PMCs", "Micromeres"))
+
+lv_alx_scl <- WhichCells(lv.integrated,
+                     expression = `LVA-36418.t1:Scl` >= 0.5 &
+                       `LVA-5802.t1:Alx1` >= 0.5,
+                     idents = c("PMCs", "Micromeres"))
+```
+
+```{r}
+lv_alx_cells <- lv.integrated@meta.data %>% 
+  filter(rownames(lv.integrated@meta.data) %in% lv_alx) %>% 
+  group_by(time_int) %>% 
+  summarize(n = n()) %>% 
+  mutate(Genes = "Alx1")
+
+lv_alx_scl_cells <- lv.integrated@meta.data %>% 
+  filter(rownames(lv.integrated@meta.data) %in% lv_alx_scl) %>% 
+  group_by(time_int) %>% 
+  summarize(n = n()) %>% 
+  mutate(Genes = "Alx1 and Scl")
+
+lv_plot <- full_join(lv_alx_cells, lv_alx_scl_cells) %>% 
+  add_row(time_int = 5, n = 0, Genes = "Alx1 and Scl")
+
+lv_plot %>% 
+  ggplot(mapping = aes(x = time_int, y = n, fill = Genes)) +
+  geom_col(position = "dodge") +
+  scale_x_continuous(breaks = c(5,6,7,8,9,10,11,12,13,14,15,16,18,20,24)) +
+  scale_fill_manual(values = c("Alx1" = "darkgray", "Alx1 and Scl" = "darkgreen"))+
+  theme_bw() +
+  labs(x = "Hours Post Fertilization",
+       y = "Number of Cells") +
+  theme(legend.position = "none")
+```
+
+

@@ -1,0 +1,236 @@
+---
+title: "Pseudobulk Pipeline"
+author: "Brennan McDonald"
+date: "2024-04-02"
+output: html_document
+---
+
+```{r}
+library(Seurat)
+library(DESeq2)
+library(SingleCellExperiment)
+library(Matrix)
+library(tidyverse)
+library(Mfuzz)
+library(ComplexHeatmap)
+```
+
+
+
+# traditional DESeq2 analysis
+
+```{r}
+CreateSeuratObject(load(
+  file = "6-60hr\ Integrated\ UMAP/HE_6-60hpf_integrated-SCT6k_195dim.Rda", 
+                        verbose = T))
+```
+
+```{r}
+# prepare the single cell experiment object
+
+counts <- he.integrated@assays$RNA@counts
+
+metadata <- he.integrated@meta.data
+
+metadata <- metadata %>% 
+  mutate(Time = as.integer(str_extract(Stage, "\\d+")))
+
+sce <- SingleCellExperiment(assays = list(counts = counts),
+                            colData = metadata)
+
+groups <- colData(sce)[, "Time"]
+```
+
+```{r}
+level <- set_names(levels(sce$Stage))
+
+cells <- as.numeric(table(sce$Time))
+
+sample_metadata <- data.frame(time = c(6, 9, 12, 16, 20, 24, 30, 
+                                       36, 42, 48, 54, 60),
+                              stage = level,
+                              n_cells = cells, 
+                              row.names = level)
+sample_metadata # row names should be the stage name
+
+write.csv(sample_metadata, "6-60hr Integrated UMAP/pseudobulk/sample_metadata-full_aggregate.csv")
+```
+
+```{r}
+# QC already performed in Seurat
+```
+
+```{r}
+# aggregate counts
+
+groups <- colData(sce)[, c("Stage")]
+
+agmat <- aggregate(t(counts(sce)), by = list(groups), FUN = sum)
+
+write.csv(agmat, "6-60hr Integrated UMAP/pseudobulk/aggregated_counts_by-stage.csv")
+```
+
+
+```{r}
+agmat <- read.csv("6-60hr Integrated UMAP/pseudobulk/aggregated_counts_by-stage.csv")
+rownames(agmat) <- agmat[,2]
+agmat <- agmat[,-c(1,2)]
+
+sample_metadata <- read.csv("6-60hr Integrated UMAP/pseudobulk/sample_metadata-full_aggregate.csv")
+rownames(sample_metadata) <- sample_metadata[,1]
+sample_metadata <- sample_metadata[,-1]
+
+tagmat <- t(agmat)
+
+# need to check that rows of sample_data align with same order and names of the columns of the counts table
+all(rownames(sample_metadata) == colnames(tagmat))
+```
+
+```{r}
+dds <- DESeqDataSetFromMatrix(tagmat, colData = sample_metadata, design = ~ time)
+
+dds <- DESeq(dds, test = "LRT", reduced = ~ 1)
+
+save(dds, file = "6-60hr Integrated UMAP/pseudobulk/deseq_object.Rda")
+
+res <- results(dds)
+```
+
+
+
+# Mfuzz clustering
+
+```{r}
+load("6-60hr Integrated UMAP/pseudobulk/deseq_object.Rda", verbose = T) # the data in here had already been normalized
+sample_metadata <- read.csv("6-60hr Integrated UMAP/pseudobulk/sample_metadata-full_aggregate.csv")
+rownames(sample_metadata) <- sample_metadata[,1]
+sample_metadata <- sample_metadata[,-1]
+
+dds <- estimateSizeFactors(dds)
+sizeFactors(dds)
+
+normalized_counts <- counts(dds, normalized = TRUE)
+#write.csv(normalized_counts, "6-60hr Integrated UMAP/pseudobulk/normalized_counts.csv")
+```
+
+```{r}
+# filter out genes designated as "VLE"
+# VLE genes do not have normalized counts exceeding 5 transcripts at any timepoint in the timecourse
+normalized_counts_noVLE <- normalized_counts
+vle_rows <- c()
+for (i in 1:length(normalized_counts[,1])) {
+  if (max(normalized_counts[i,]) < 5) {
+    vle_rows <- c(vle_rows, i)
+  }
+}
+normalized_counts_noVLE <- normalized_counts_noVLE[-vle_rows,]
+
+
+##########
+
+mcounts <- ExpressionSet(normalized_counts_noVLE, 
+                         phenoData = AnnotatedDataFrame(sample_metadata))
+
+mcounts <- filter.NA(mcounts, thres = 0.25) # 0 genes excluded
+
+# standardization
+mcounts <- standardise(mcounts)
+```
+
+```{r}
+times <- c(6, 9, 12, 16, 20, 24, 30, 36, 42, 48, 54, 60)
+
+# estimate the fuzzifier parameter m
+m1 <- mestimate(mcounts)
+
+# run mfuzz clustering
+set.seed(123)
+clustered <- mfuzz(mcounts, centers = 9, m = m1, iter.max = 200, verbose = T)
+
+mfuzz.plot2(mcounts, cl = clustered, mfrow = c(3,3), 
+           time.labels = c(6, 9, 12, 16, 20, 24, 30, 36, 42, 48, 54, 60), 
+           x11 = F)
+
+# plot cluster centroids
+par(mfrow = c(3,3))
+plot(x = times, y = clustered$centers[1,])
+plot(x = times, y = clustered$centers[2,])
+plot(x = times, y = clustered$centers[3,])
+plot(x = times, y = clustered$centers[4,])
+plot(x = times, y = clustered$centers[5,])
+plot(x = times, y = clustered$centers[6,])
+plot(x = times, y = clustered$centers[7,])
+plot(x = times, y = clustered$centers[8,])
+plot(x = times, y = clustered$centers[9,])
+```
+
+```{r optimal-cluster-number}
+# CV for selecting the optimal number of clusters
+# we want the number of clusters to be the largest such that the correlation between any pair of cluster centroids is less than r=0.85
+
+# function to find the maximum correlation value that is not 1 (on the diagonal)
+find_max <- function(centers) {
+  max <- 0
+  m <- cor(t(centers))
+  for (i in 1:nrow(m)) {
+    for (j in 1:ncol(m)) {
+      val <- m[i,j]
+      if (val > max && val < 1) {
+        max <- val
+      }
+    }
+  }
+  return(max)
+}
+
+set.seed(123)
+results <- tibble(ncluster = c(NA),
+                  iteration = c(NA),
+                  max_cor = c(NA))
+niterations <- 10
+crange <- 5:15
+for (c in crange) {
+  for (iter in 1:niterations) {
+    cx <- mfuzz(mcounts, centers = c, m = m1, iter.max = 500, verbose = F)
+    maxcorr <- find_max(cx$centers)
+    results <- add_row(results, ncluster = c, iteration = iter, max_cor = maxcorr)
+    print(paste("cluster ", c, ", iteration ", iter, " done", sep= ""))
+  }
+}
+#results <- results[-1,]
+
+results %>% 
+  group_by(ncluster) %>% 
+  summarize(mean_maxCorr = mean(max_cor))
+# the average maximum correlation between clusters (n=10 iterations) exceeds 0.85 when the total number of clusters is 10
+# by Israel et al 2016, I should choose 9 total clusters
+
+#write.csv(results, "6-60hr Integrated UMAP/pseudobulk/mfuzz_iterations.csv")
+```
+
+## Mfuzz profile cluster heatmap
+
+```{r heatmap-mfuzz-cluster-profiles}
+# make custom heatmap to show different clusters
+
+library(ComplexHeatmap)
+#https://jokergoo.github.io/ComplexHeatmap-reference/book/heatmap-decoration.html
+
+centroids <- t(clustered$centers)
+
+set.seed(123)
+cent_plot <- Heatmap(matrix = centroids,
+        name = "Standardized\nExpression",
+        cluster_rows = F,
+        clustering_distance_columns = "euclidean",
+        clustering_method_columns = "complete",
+        row_names_side = "left",
+        column_names_rot = 360, 
+        column_km = 3, show_parent_dend_line = FALSE, # this splits by kmeans clustering; three clusters splits by the three groupings of profiles
+        column_title = c("High\nMiddle", "High\nLate", "High\nEarly"),
+        column_title_gp = gpar(fill = c("lightgreen", "orange", "lightpink")),
+        column_names_gp = gpar(col = c("lightgreen", "orange", "lightpink")))
+cent_plot
+```
+
+
