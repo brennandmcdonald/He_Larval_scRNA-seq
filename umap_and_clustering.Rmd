@@ -5,9 +5,17 @@ date: "2024-04-02"
 output: html_document
 ---
 
+# Overview
+
+The following script contains the code used to run the UMAP and clustering algorithms on the Seurat object containing the normalized data for all 12 timepoints in this study. It also contains code for identifying the marker genes for each cluster, assigning cell type identities to clusters, and generating several plots used in the main paper.
+
+
 ```{r}
+# Load packages
 library(tidyverse)
 library(Seurat)
+library(scCustomize)
+library(viridis)
 ```
 
 ```{r}
@@ -17,7 +25,8 @@ CreateSeuratObject(load(
                         verbose = T))
 ```
 
-## Get summary statistics
+
+# Obtain summary statistics for the dataset
 
 ```{r}
 times <- str_extract(he.integrated@meta.data$Stage, "\\d+")
@@ -27,9 +36,14 @@ he.integrated <- AddMetaData(he.integrated, times, col.name = "time_int")
 
 nrow(he.integrated@meta.data)
 
+# Creates a violin plot of the distribution of number of RNA features and RNA 
+# transcripts found per cell in the dataset.
+# See figure S____
 VlnPlot(he.integrated, features = c("nFeature_RNA", "nCount_RNA"),
         group.by = "time_int", pt.size = 0)
 
+# Outputs the average number of RNA features and transcripts over cells in each
+# timepoint.
 he.integrated@meta.data %>% 
   group_by(time_int) %>% 
   summarize(average_nFeature = mean(nFeature_RNA),
@@ -37,60 +51,22 @@ he.integrated@meta.data %>%
 ```
 
 
+# Run the UMAP and clustering algorithms
 
 ```{r}
-# Perform Clustering
+# Perform clustering with resolution = 3, which returns 57 distinct clusters
 he.integrated <- FindNeighbors(he.integrated, dims = 1:195)
-he.integrated <- FindClusters(he.integrated, resolution = 3) #57 clusters with resolution=3
-
+he.integrated <- FindClusters(he.integrated, resolution = 3)
 
 # Non-linear dimensional reduction (UMAP)
 he.integrated <- RunUMAP(he.integrated, dims = 1:195)
-
-# Cluster UMAP
-DimPlot(he.integrated, reduction = "umap", label = TRUE)
-
-# Timepoint UMAP
-DimPlot(he.integrated, reduction = "umap", group.by = "group", label = TRUE, repel = TRUE)
 ```
 
 
-##################
-UMAPs for figure 2
-##################
-
-New scCustomize plots
+# Identify the marker genes for each cluster
 
 ```{r}
-library(scCustomize)
-
-times <- str_extract(he.integrated@meta.data$Stage, "\\d+")
-times <- as.integer(times)
-
-he.integrated <- AddMetaData(he.integrated, times, col.name = "time_int")
-
-x <- seq(10,250,20)
-viridis_plasma_dark_high[x]
-
-# Figure 2 time umap
-# Export as 6x8 for figure 2
-DimPlot_scCustom(he.integrated,
-                 group.by = "time_int",
-                 colors_use = viridis_plasma_dark_high[x]) +
-  theme(legend.position = "none")
-
-# Figure 2 cell type umap
-# Export as 8.25x11 for figure 2
-DimPlot_scCustom(he.integrated,
-                 group.by = "celltype",
-                 colors_use = "alphabet") +
-  theme(legend.position = "none")
-```
-
-
-
-```{r}
-# Find cluster markers
+# Find cluster marker genes that are expressed in a minimum of 25% of cells in each cluster with a log2FC value of >0.25
 he.integrated.markers <- FindAllMarkers(he.integrated, only.pos = T, min.pct = 0.25, 
                                         logfc.threshold = 0.25)
 
@@ -99,18 +75,17 @@ he.markers.save <- he.integrated.markers %>%
   slice_max(n = 50, order_by = avg_log2FC)
 
 write.csv(he.markers.save, file = "6-60hr\ Integrated\ UMAP/HE_6-60hr_cluster-markers.csv")
-
-top10markers <- he.integrated.markers %>%
-  group_by(cluster) %>%
-  top_n(n = 10, wt = avg_log2FC)
 ```
 
+
+Use the marker genes and previous literature to assign cell type identities to each of the clusters (see table S___ for the genes used to make each assignment).
 
 ```{r}
 Idents(he.integrated) <- "seurat_clusters"
 
 
-#### Annotations updated 01/12/2024
+# The index of these celltype identities in the vector corresponds to the 
+# number of the cluster that the identity will be assigned to
 new.cluster.ids <- c("Animal Pole Domain",
                      "Animal Pole Domain",
                      "Larval Ectoderm",
@@ -169,25 +144,52 @@ new.cluster.ids <- c("Animal Pole Domain",
                      "Unknown",
                      "Neural")
 
+# The identities are added to a new identity class in the Seurat object
 names(new.cluster.ids) <- levels(he.integrated)
 he.integrated <- RenameIdents(he.integrated, new.cluster.ids)
 
+# The new identities are added to the metadata of the Seurat object
 he.integrated <- AddMetaData(
   object = he.integrated,
   metadata = Idents(he.integrated),
   col.name = "celltype"
 )
 
+# The updated Seurat object is saved
 save(he.integrated, file = "/work/bdm50/scRNA-seq/HE_6-60hpf_integrated-SCT6k.Rda")
 ```
 
 
+The following code uses the scCustomize package to generate DimPlots for the UMAP projection of the data colored by sample timepoint and celltype identity
+
+```{r}
+# Generate a list of sample timepoints (the number values only)
+times <- str_extract(he.integrated@meta.data$Stage, "\\d+")
+times <- as.integer(times)
+
+he.integrated <- AddMetaData(he.integrated, times, col.name = "time_int")
+
+x <- seq(10,250,20)
+viridis_plasma_dark_high[x]
+
+# This generates the UMAP colored by time used in Figure 2
+DimPlot_scCustom(he.integrated,
+                 group.by = "time_int",
+                 colors_use = viridis_plasma_dark_high[x]) +
+  theme(legend.position = "none")
+
+# This generates the UMAP colored by celltype used in Figure 2
+DimPlot_scCustom(he.integrated,
+                 group.by = "celltype",
+                 colors_use = "alphabet") +
+  theme(legend.position = "none")
+```
 
 
+The following code extracts the marker genes for each celltype in the Seurat object.
 
 ```{r}
 # Get cell type markers
-
 celltype.markers <- FindAllMarkers(he.integrated, only.pos = T, min.pct = 0.25, 
                                         logfc.threshold = 0.25)
 
@@ -198,7 +200,7 @@ top10markers <- celltype.markers %>%
 write.csv(top10markers, file = "6-60hr\ Integrated\ UMAP/HE_6-60hr_celltype-markers.csv")
 ```
 
-Make dotplots for supplement
+The following code uses the curated set of celltype marker genes (from table S___) to generate a dotplot showing expression of each of the genes in each celltype for Figure S___.
 
 ```{r}
 library(scCustomize)
@@ -273,7 +275,7 @@ all_celltype_genes <- c("HER-17729.t1:Sp-Ccnr2",
 "HER-36368.t1:Sp-Ocrl1")
 
 levs <- factor(c("Early Ectoderm",
-                 "Set Aside", # Make sure to change to undifferentiated in the PDF
+                 "Undifferentiated",
                  "Animal Pole Domain",
                  "Larval Ectoderm",
                  "Early Endomesoderm",
@@ -293,25 +295,12 @@ levs <- factor(c("Early Ectoderm",
 
 Idents(he.integrated) <- factor(he.integrated@active.ident, levels = levs)
 
-# Export as 9.5 x 14
+# This generates the dotplot of celltype marker genes for Figure S___
 DotPlot_scCustom(he.integrated,
                  features = all_celltype_genes,
                  x_lab_rotate = T,
                  flip_axes = T)
 ```
-
-
-```{r}
-# Count number of cells in each cell type
-cell_counts <- he.integrated@meta.data %>% 
-  group_by(celltype, Stage) %>% 
-  summarize(n = n())
-
-pivot_wider(cell_counts, names_from = Stage, values_from = n, values_fill = 0) %>% View()
-```
-
-
-
 
 
 

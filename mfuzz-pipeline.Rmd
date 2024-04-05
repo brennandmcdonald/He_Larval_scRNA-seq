@@ -5,29 +5,40 @@ date: "2024-04-02"
 output: html_document
 ---
 
+# Overview
+
+The following script provides the code needed to perform fuzzy c-means clustering of temporal gene expression profiles for genes in the He scRNA-seq dataset using the package Mfuzz.
+
+
 ```{r}
+# Load packages
 library(Seurat)
 library(DESeq2)
 library(SingleCellExperiment)
 library(Matrix)
 library(tidyverse)
+library(dplyr)
 library(Mfuzz)
 library(ComplexHeatmap)
 ```
 
 
+# Pseudobulk the scRNA-seq data
 
-# traditional DESeq2 analysis
+The Mfuzz pipeline requires bulk RNA-seq data. I performed pseudobulking of the scRNA-seq data, which sums up the expression of genes across all the cells within a time point.
+
+I utilized the tools provided by the DESeq2 package to perform this.
 
 ```{r}
+# Load the He Seurat object
 CreateSeuratObject(load(
   file = "6-60hr\ Integrated\ UMAP/HE_6-60hpf_integrated-SCT6k_195dim.Rda", 
                         verbose = T))
 ```
 
-```{r}
-# prepare the single cell experiment object
+I converted the Seurat object into a SingleCellExperiment object to simplify the dataset for pseudobulking.
 
+```{r}
 counts <- he.integrated@assays$RNA@counts
 
 metadata <- he.integrated@meta.data
@@ -35,11 +46,16 @@ metadata <- he.integrated@meta.data
 metadata <- metadata %>% 
   mutate(Time = as.integer(str_extract(Stage, "\\d+")))
 
+# Combine the gene expression counts data with the metadata from the Seurat object
+# into a SingleCellExperiment object.
 sce <- SingleCellExperiment(assays = list(counts = counts),
                             colData = metadata)
 
 groups <- colData(sce)[, "Time"]
 ```
+
+
+This exports the metadata associated with the scRNA-seq data as a separate dataframe.
 
 ```{r}
 level <- set_names(levels(sce$Stage))
@@ -53,38 +69,34 @@ sample_metadata <- data.frame(time = c(6, 9, 12, 16, 20, 24, 30,
                               row.names = level)
 sample_metadata # row names should be the stage name
 
-write.csv(sample_metadata, "6-60hr Integrated UMAP/pseudobulk/sample_metadata-full_aggregate.csv")
+write.csv(sample_metadata, 
+          "6-60hr Integrated UMAP/pseudobulk/sample_metadata-full_aggregate.csv")
 ```
 
-```{r}
-# QC already performed in Seurat
-```
+
+The following code sums the gene expression counts of all the cells within a time point. The result is a matrix with rows for each gene and columns for each time point. 
 
 ```{r}
-# aggregate counts
-
 groups <- colData(sce)[, c("Stage")]
 
+# This performs the summation operation across all cells within a time point
 agmat <- aggregate(t(counts(sce)), by = list(groups), FUN = sum)
-
-write.csv(agmat, "6-60hr Integrated UMAP/pseudobulk/aggregated_counts_by-stage.csv")
-```
-
-
-```{r}
-agmat <- read.csv("6-60hr Integrated UMAP/pseudobulk/aggregated_counts_by-stage.csv")
 rownames(agmat) <- agmat[,2]
 agmat <- agmat[,-c(1,2)]
 
+# This inverts aggregated counts matrix such that genes are rows and columns are time points.
+tagmat <- t(agmat)
+
+# The sample metadata is loaded in
 sample_metadata <- read.csv("6-60hr Integrated UMAP/pseudobulk/sample_metadata-full_aggregate.csv")
 rownames(sample_metadata) <- sample_metadata[,1]
 sample_metadata <- sample_metadata[,-1]
 
-tagmat <- t(agmat)
-
-# need to check that rows of sample_data align with same order and names of the columns of the counts table
+# We need to check that rows of sample_data align with same order and names of the columns of the counts table
 all(rownames(sample_metadata) == colnames(tagmat))
 ```
+
+The aggregated counts matrix is used to generate a DESeq object (from the `DESeq2` package). This object can be used as input into the Mfuzz pipeline.
 
 ```{r}
 dds <- DESeqDataSetFromMatrix(tagmat, colData = sample_metadata, design = ~ time)
@@ -92,30 +104,37 @@ dds <- DESeqDataSetFromMatrix(tagmat, colData = sample_metadata, design = ~ time
 dds <- DESeq(dds, test = "LRT", reduced = ~ 1)
 
 save(dds, file = "6-60hr Integrated UMAP/pseudobulk/deseq_object.Rda")
-
-res <- results(dds)
 ```
 
 
 
-# Mfuzz clustering
+# Mfuzz fuzzy c-means clustering of gene expression profiles
+
+I used the pseudobulked scRNA-seq data as input into the Mfuzz pipeline.
+
+The following code normalizes and standardizes the aggregated counts data.
 
 ```{r}
-load("6-60hr Integrated UMAP/pseudobulk/deseq_object.Rda", verbose = T) # the data in here had already been normalized
+# Load the DESeq object with the aggregated counts data, as well as the dataframe 
+# with sample metadata
+load("6-60hr Integrated UMAP/pseudobulk/deseq_object.Rda", verbose = T)
 sample_metadata <- read.csv("6-60hr Integrated UMAP/pseudobulk/sample_metadata-full_aggregate.csv")
 rownames(sample_metadata) <- sample_metadata[,1]
 sample_metadata <- sample_metadata[,-1]
 
+# This estimates size factors needed for normalization and standardization
 dds <- estimateSizeFactors(dds)
 sizeFactors(dds)
 
+# The aggregated counts data is normalized
 normalized_counts <- counts(dds, normalized = TRUE)
-#write.csv(normalized_counts, "6-60hr Integrated UMAP/pseudobulk/normalized_counts.csv")
-```
 
-```{r}
-# filter out genes designated as "VLE"
-# VLE genes do not have normalized counts exceeding 5 transcripts at any timepoint in the timecourse
+write.csv(normalized_counts, "6-60hr Integrated UMAP/pseudobulk/normalized_counts.csv")
+
+
+# Filter out genes designated as very low expression (VLE)
+# VLE genes do not have normalized counts exceeding 5 transcripts at any time 
+# point in the time course
 normalized_counts_noVLE <- normalized_counts
 vle_rows <- c()
 for (i in 1:length(normalized_counts[,1])) {
@@ -126,49 +145,24 @@ for (i in 1:length(normalized_counts[,1])) {
 normalized_counts_noVLE <- normalized_counts_noVLE[-vle_rows,]
 
 
-##########
-
+# An ExpressionSet object is created, on which the Mfuzz analysis is run
+# This takes both the normalized counts and sample metadata as input
 mcounts <- ExpressionSet(normalized_counts_noVLE, 
                          phenoData = AnnotatedDataFrame(sample_metadata))
 
+# Genes that are missing values at more than 25% of time points are excluded
 mcounts <- filter.NA(mcounts, thres = 0.25) # 0 genes excluded
 
-# standardization
+# Standardization is performed using the standardize function from Mfuzz
 mcounts <- standardise(mcounts)
 ```
 
+The following code then performs fuzzy c-means clustering on the normalized and standardized data.
+
+I first needed to establish the optimal number of clusters to use for the analysis (setting the value of k). I followed the cross-validation procedure established by Israel et al. (2016). This involves setting the number of clusters to be the largest value of k without having the correlation between any pair of cluster centroids be greater than r=0.85.
+
 ```{r}
-times <- c(6, 9, 12, 16, 20, 24, 30, 36, 42, 48, 54, 60)
-
-# estimate the fuzzifier parameter m
-m1 <- mestimate(mcounts)
-
-# run mfuzz clustering
-set.seed(123)
-clustered <- mfuzz(mcounts, centers = 9, m = m1, iter.max = 200, verbose = T)
-
-mfuzz.plot2(mcounts, cl = clustered, mfrow = c(3,3), 
-           time.labels = c(6, 9, 12, 16, 20, 24, 30, 36, 42, 48, 54, 60), 
-           x11 = F)
-
-# plot cluster centroids
-par(mfrow = c(3,3))
-plot(x = times, y = clustered$centers[1,])
-plot(x = times, y = clustered$centers[2,])
-plot(x = times, y = clustered$centers[3,])
-plot(x = times, y = clustered$centers[4,])
-plot(x = times, y = clustered$centers[5,])
-plot(x = times, y = clustered$centers[6,])
-plot(x = times, y = clustered$centers[7,])
-plot(x = times, y = clustered$centers[8,])
-plot(x = times, y = clustered$centers[9,])
-```
-
-```{r optimal-cluster-number}
-# CV for selecting the optimal number of clusters
-# we want the number of clusters to be the largest such that the correlation between any pair of cluster centroids is less than r=0.85
-
-# function to find the maximum correlation value that is not 1 (on the diagonal)
+# A custom function to find the maximum correlation value that is not 1 from a the matrix of pairwise correlation values between clusters outputted by mfuzz.
 find_max <- function(centers) {
   max <- 0
   m <- cor(t(centers))
@@ -183,10 +177,22 @@ find_max <- function(centers) {
   return(max)
 }
 
-set.seed(123)
+
+times <- c(6, 9, 12, 16, 20, 24, 30, 36, 42, 48, 54, 60)
+
+# Estimate the fuzzifier parameter m
+m1 <- mestimate(mcounts)
+
+set.seed(123) # for reproducibility
+
+# A dataframe to hold the results of the cross validation
 results <- tibble(ncluster = c(NA),
                   iteration = c(NA),
                   max_cor = c(NA))
+
+# I tested values of k ranging from 5 to 15. I ran the mfuzz function 10 times 
+# for each value of k, and stored the maximum correlation value from each 
+# iteration in the results dataframe.
 niterations <- 10
 crange <- 5:15
 for (c in crange) {
@@ -199,26 +205,101 @@ for (c in crange) {
 }
 #results <- results[-1,]
 
+# I then averaged the maximum correlation value across the 10 iterations for 
+# each value of k
 results %>% 
   group_by(ncluster) %>% 
   summarize(mean_maxCorr = mean(max_cor))
 # the average maximum correlation between clusters (n=10 iterations) exceeds 0.85 when the total number of clusters is 10
 # by Israel et al 2016, I should choose 9 total clusters
 
-#write.csv(results, "6-60hr Integrated UMAP/pseudobulk/mfuzz_iterations.csv")
+write.csv(results, "6-60hr Integrated UMAP/pseudobulk/mfuzz_iterations.csv")
 ```
+
+
+Based on the cross validation procedure, the average maximum correlation between clusters (n=10 iterations) exceeds 0.85 when the total number of clusters is 10 (k=10). By Israel et al. (2016), I should choose 9 total clusters (k=9) for downstream Mfuzz analysis steps.
+
+```{r}
+times <- c(6, 9, 12, 16, 20, 24, 30, 36, 42, 48, 54, 60)
+
+# Estimate the fuzzifier parameter m
+m1 <- mestimate(mcounts)
+
+# Perform mfuzz clustering with 9 centers and a maximum of 200 iterations.
+set.seed(123) # for reproducibility
+clustered <- mfuzz(mcounts, centers = 9, m = m1, iter.max = 200, verbose = T)
+
+# Generates a plot of the clustered gene expression profiles
+mfuzz.plot2(mcounts, cl = clustered, mfrow = c(3,3), 
+           time.labels = c(6, 9, 12, 16, 20, 24, 30, 36, 42, 48, 54, 60), 
+           x11 = F)
+
+# Plots the centroids of each gene expression profile cluster.
+par(mfrow = c(3,3))
+plot(x = times, y = clustered$centers[1,])
+plot(x = times, y = clustered$centers[2,])
+plot(x = times, y = clustered$centers[3,])
+plot(x = times, y = clustered$centers[4,])
+plot(x = times, y = clustered$centers[5,])
+plot(x = times, y = clustered$centers[6,])
+plot(x = times, y = clustered$centers[7,])
+plot(x = times, y = clustered$centers[8,])
+plot(x = times, y = clustered$centers[9,])
+
+
+# Save the Mfuzz object for downstream analyses
+save(clustered, file = "6-60hr Integrated UMAP/pseudobulk/mfuzz_object.Rda")
+```
+
+
+```{r}
+# need to match the row/gene names from the Mfuzz analysis with the H_ery IDs from the GO annotation dataset
+
+gnames <- anno %>% 
+  dplyr::select(H_ery_ID, SPU.common_name) %>% 
+  mutate(merge = paste(H_ery_ID, SPU.common_name, sep = ":"))
+
+gnames$new_code <- rep(NA, length(gnames$merge))
+i <- 1
+for (co in gnames$merge) {
+  gnames[i,4] <- paste(str_split_1(co, ":|-|/|_"), collapse = ".")
+  i <- i+1
+}
+
+df_clusters <- tibble(codes = names(clustered$cluster), 
+                      clusters = clustered$cluster)
+df_clusters$mem_val <- rep(NA, length(df_clusters$codes))
+df_clusters$o_mem_val <- rep(NA, length(df_clusters$codes))
+for (g in 1:length(df_clusters$codes)) {
+  clust <- as.integer(df_clusters[g, 2])
+  p <- clustered$membership[g, clust]
+  df_clusters[g, 3] <- p
+  df_clusters[g, 4] <- 1-p
+}
+
+cluster_inputs <- tibble(GID = gnames$H_ery_ID,
+                         code = gnames$new_code)
+
+cluster_inputs <- merge(cluster_inputs, df_clusters, by.x = "code", by.y = "codes")
+
+write.csv(cluster_inputs, "6-60hr Integrated UMAP/pseudobulk/gene_cluster_assignments.csv", 
+          row.names = F)
+```
+
+
 
 ## Mfuzz profile cluster heatmap
 
-```{r heatmap-mfuzz-cluster-profiles}
-# make custom heatmap to show different clusters
+Make a custom heatmap using `CustomHeatmap`, in which each row of the heatmap is a time point and each column is a Mfuzz cluster. Each cell is colored based on the centroid (standardized gene expression value) of genes in that cluster at that timepoint.
 
-library(ComplexHeatmap)
-#https://jokergoo.github.io/ComplexHeatmap-reference/book/heatmap-decoration.html
+I also used the functionality within the `Heatmap` function to perform k-means clustering of the Mfuzz clusters, with k=3. This resultss in 3 groups, which I labeled "High Early", "High Middle", and "High Late" based on when the expression of the cluster hit its peak.
+
+```{r}
+load(file = "6-60hr Integrated UMAP/pseudobulk/mfuzz_object.Rda")
 
 centroids <- t(clustered$centers)
 
-set.seed(123)
+set.seed(123) # for reproducibility of the kmeans clustering
 cent_plot <- Heatmap(matrix = centroids,
         name = "Standardized\nExpression",
         cluster_rows = F,
@@ -230,6 +311,7 @@ cent_plot <- Heatmap(matrix = centroids,
         column_title = c("High\nMiddle", "High\nLate", "High\nEarly"),
         column_title_gp = gpar(fill = c("lightgreen", "orange", "lightpink")),
         column_names_gp = gpar(col = c("lightgreen", "orange", "lightpink")))
+
 cent_plot
 ```
 

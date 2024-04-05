@@ -1,0 +1,272 @@
+---
+title: "GRN Pseudobulk Analysis"
+author: "Brennan McDonald"
+date: "2024-04-02"
+output: html_document
+---
+
+# Overview
+
+The following script provides the code needed to analyze the temporal expression profiles of sea urchin embryonic GRN genes, using the results from the Mfuzz fuzzy c-means clustering pipeline. The code needed to generate some of the plots in Figure 8 is also provided.
+
+
+```{r}
+# Load packages
+library(tidyverse)
+library(Seurat)
+library(scCustomize)
+```
+
+```{r}
+# Load the Mfuzz analysis object
+load(file = "6-60hr Integrated UMAP/pseudobulk/mfuzz_object.Rda")
+
+# Load the Seurat object
+CreateSeuratObject(load(
+  file = "6-60hr\ Integrated\ UMAP/HE_6-60hpf_integrated-SCT6k_195dim.Rda", 
+                        verbose = T))
+```
+
+
+# Curate a list of GRN genes for He
+
+The list of GRN genes used in the analyses of Davidson et al. (2022) was retrieved. I then filter this list for genes that are retained in the He Seurat object (those that showed significant variable expression in the scRNA-seq dataset).
+
+```{r grn-curation}
+# Import the original list of GRN genes from Davidson et al. (2022)
+grn <- read.table("6-60hr Integrated UMAP/pseudobulk/dGRN.txt", sep = "\t", 
+                   col.names = c("SPU_number", "Gene", "Family", "Synonyms"))
+
+grn <- grn %>% 
+  filter(Gene != "none")
+
+
+# The following code searches the He Seurat object for the genes in the original 
+# GRN list. If multiple transcripts with the same gene common name are found,
+# they are partitioned into the "options" list.
+# I manually examined the expression patterns of each gene option in the options
+# list to find the transcript with the highest expression for downstream analysis.
+options <- tibble(gene = c(NA), codes = c(NA))
+final_list <- tibble(gene = c(NA), code = c(NA))
+for (dgene in grn$Gene) {
+  name <- rownames(he.integrated@assays$RNA@counts)[grep(dgene, rownames(he.integrated@assays$RNA@counts))]
+  if (length(name) <= 1) {
+    final_list <- add_row(final_list, gene = dgene, 
+                          code = name[1])
+  } else {
+    options <- add_row(options, gene = dgene, 
+                       codes = paste(name, collapse = "; "))
+  }
+}
+
+# only genes included in the Seurat object will be used for downstream analyses
+# I used the transcript with the highest expression level for a given gene
+
+
+# Genes not found in He genome: Sp-NpC2L_1, Sp-Fng, Sp-Dri, Sp-glysynk3b, Sp-Gsk3, Sp-Pmar1b, Sp-Pmar1c, Sp-Trk, Sp-GataL
+# Genes not in Seurat object: Sp-Ets4, Sp-Pax2, Sp-Eya, Sp-Pax2/5/8, Sp-Pmar1d, Sp-Nanos1, Sp-Smad2/3, Sp-HesC, Sp-Rxr
+
+
+# Once I selected the final list of GRN genes, I refactored their gene-transcript
+# codes to match the format in the Mfuzz object.
+dgrn$new_code <- rep(NA, length(grn$code))
+i <- 1
+for (co in grn$code) {
+  grn[i,3] <- paste(str_split_1(co, ":|-|/"), collapse = ".")
+  i <- i+1
+}
+
+write.csv(grn, "6-60hr Integrated UMAP/pseudobulk/dGRN_codes.csv", row.names = F)
+```
+
+
+# Analyze the expression profiles of GRN and TF genes
+
+## Assign profiles to GRN genes
+
+I matched the expression profile assignments from the Mfuzz analysis with the GRN genes from my curated list.
+
+```{r}
+grn <- read.csv("6-60hr Integrated UMAP/pseudobulk/dGRN_codes.csv")
+
+
+# I modified the cluster identity assignments from the Mfuzz object into a
+# dataframe that I could filter for genes in the GRN list.
+clustered_idents <- tibble(membership_val = rep(NA, length(clustered$membership[,1])))
+for (i in 1:length(clustered$membership[,1])) {
+  clustered_idents[i,1] <- max(clustered$membership[i,])
+}
+clustered_idents$cluster_call <- as.vector(clustered$cluster)
+rownames(clustered_idents) <- names(clustered$cluster)
+
+
+# This code matches GRN genes to their assigned cluster identities
+grn$cluster <- rep(NA, length(grn$new_code))
+grn$cluster_membership_val <- rep(NA, length(grn$new_code))
+for (i in 1:length(grn$new_code)) {
+  grn[i,4] <- clustered_idents[grn[i,3],2]
+  grn[i,5] <- clustered_idents[grn[i,3],1]
+}
+
+grn %>% 
+  group_by(cluster) %>% 
+  summarize(n = n())
+
+write.csv(grn, "6-60hr Integrated UMAP/pseudobulk/dGRN_clusters.csv")
+```
+
+
+This code then classifies whether the cluster assignments for each GRN gene fall into clusters that are part of the "High Early", "High Middle", or "High Late" group (from the output of the heatmap k-means analysis in "mfuzz-pipeline.Rmd").
+
+```{r}
+grn <- read.csv("6-60hr Integrated UMAP/pseudobulk/dGRN_clusters.csv")
+
+# sum number of grn genes in each cluster depending on the shape of the expression profile
+exp_early <- c(3,5,8)
+exp_middle <- c(1,6,7)
+exp_late <- c(2,4,9)
+grn$high_expression <- rep(NA, length(grn$code))
+for (i in 1:length(grn$code)) {
+  if (grn[i,4] %in% exp_early) {
+    grn[i,6] <- "High Early"
+  } else if (grn[i,4] %in% exp_middle) {
+    grn[i,6] <- "High Middle"
+  } else if (grn[i,4] %in% exp_late) {
+    grn[i,6] <- "High Late"
+  }
+}
+
+write.csv(grn, "6-60hr Integrated UMAP/pseudobulk/dGRN_clusters.csv")
+```
+
+
+## Assign profiles to TF genes
+
+I then perform the same analysis for the curated transcription factor list (provided by the "tf-list-curation.Rmd" script). The TF genes are assigned expression profiles based on the Mfuzz analysis results.
+
+```{r}
+# List of all genes with MFuzz cluster assignments
+mfuzz_genes <- read.csv("6-60hr Integrated UMAP/pseudobulk/gene_cluster_assignments.csv")
+
+# List of candidate transcription facotrs
+tfs <- read.csv("6-60hr Integrated UMAP/pseudobulk/devens-and-go-term_tf-list.csv")
+
+
+# Generate gene codes to use to lookup the corresponding entries in the Mfuzz 
+# table and Seurat object
+tfs <- tfs %>% 
+  mutate(new_gid = str_replace_all(GID, pattern = "_", replace = "-"),
+         new_spu_name = str_replace_all(SPU_common_name, 
+                                        pattern = "_", 
+                                        replace = "-")) %>% 
+  mutate(seurat_code = paste(new_gid, new_spu_name, sep = ":")) %>% 
+  mutate(mfuzz_code = str_replace_all(seurat_code, pattern = ":|-|/|_", replace = ".")) %>% 
+  dplyr::select(-new_gid, -new_spu_name)
+
+
+# This identifies the genes from the TF list that are included in the Mfuzz output
+# An inner_join() only keeps observations from x that have a matching key in y.
+mfuzz_tfs <- inner_join(x = as_tibble(mfuzz_genes), y = as_tibble(tfs),
+           by = join_by(code == mfuzz_code),
+           na_matches = "never") %>% 
+  dplyr::select(-GID.y) %>% 
+  rename(GID = GID.x)
+```
+
+
+This code then classifies whether the cluster assignments for each TF gene fall into clusters that are part of the "High Early", "High Middle", or "High Late" group (from the output of the heatmap k-means analysis in "mfuzz-pipeline.Rmd").
+
+```{r}
+# sum number of TF genes in each cluster depending on the shape of the expression profile
+exp_early <- c(3,5,8)
+exp_middle <- c(1,6,7)
+exp_late <- c(2,4,9)
+mfuzz_tfs$high_expression <- rep(NA, nrow(mfuzz_tfs))
+for (i in 1:nrow(mfuzz_tfs)) {
+  if (mfuzz_tfs[i,"clusters"] %in% exp_early) {
+    mfuzz_tfs[i,"high_expression"] <- "High Early"
+  } else if (mfuzz_tfs[i,"clusters"] %in% exp_middle) {
+    mfuzz_tfs[i,"high_expression"] <- "High Middle"
+  } else if (mfuzz_tfs[i,"clusters"] %in% exp_late) {
+    mfuzz_tfs[i,"high_expression"] <- "High Late"
+  }
+}
+
+write.csv(mfuzz_tfs, "6-60hr Integrated UMAP/pseudobulk/mfuzz_tfs.csv", row.names = F)
+```
+
+
+## Generate plots for Figure 8
+
+This code then uses the expression profile assignments for the GRN genes and transcription factors to plot the number of genes that fall into each expression category (for Figure 8).
+
+```{r}
+grn <- read.csv("6-60hr Integrated UMAP/pseudobulk/dGRN_clusters.csv")
+mfuzz_tfs <- read_csv("6-60hr Integrated UMAP/pseudobulk/mfuzz_tfs.csv")
+
+# Add a column to the TF dataframe indicating the gene's TF identity
+plot_tfs <- mfuzz_tfs %>% 
+  select(seurat_code, high_expression) %>% 
+  mutate(type = "TF")
+
+# Add a column to the GRN dataframe indicating the gene's GRN identity
+plot_grn <- grn %>% 
+  filter(!is.na(high_expression)) %>% 
+  select(code, high_expression) %>% 
+  rename(seurat_code = code) %>% 
+  mutate(type = "GRN")
+
+# Merge the GRN and TF gene dataframes
+plot_genes <- plot_tfs %>% 
+  full_join(plot_grn)
+
+plot_genes$high_expression <- factor(plot_genes$high_expression,
+                              levels = c("High Early", "High Middle", "High Late"))
+
+# Generate the barplot for Figure 8
+plot_genes %>% 
+  group_by(type, high_expression) %>% 
+  summarize(n = n()) %>% 
+  ggplot(aes(x = high_expression, y = n, fill = type)) +
+  geom_col(width = 0.4, position = "dodge") +
+  theme_bw() +
+  scale_fill_discrete(type = c("darkblue", "darkgray"), 
+                      name = "Gene\nCategory") +
+  labs(x = "Time of Highest Expression",
+       y = "Number of Genes")
+```
+
+
+This code identifies the 10 GRN genes in each expression profile category with the highest average expression in the Seurat object. These genes are listed in the table in Figure 8.
+
+```{r}
+# Identify the highest expressed genes in the GRN in each of the time frames,
+# using the genes that have the highest average expression in any cell type
+high_grn <- c()
+exp_grn$max_exp <- rep(NA, length(exp_grn$gene))
+i = 1
+for (gene in exp_grn$code) {
+  av_exp = AverageExpression(he.integrated, features = gene)
+  if (max(av_exp$RNA@x) > 10000) {
+    high_grn <- c(high_grn, gene)
+  }
+  exp_grn[i,9] <- max(av_exp$RNA@x)
+  i = i+1
+}
+
+exp_grn %>% 
+  filter(code %in% high_grn) %>% 
+  group_by(high_expression) %>% 
+  summarize(n = n())
+
+# Highlight the 10 genes from each expression category with the highest average 
+# expression for Figure 8
+high_exp <- exp_grn %>% 
+  filter(!is.na(cluster)) %>% 
+  distinct(code, .keep_all = T) %>% 
+  group_by(high_expression) %>% 
+  slice_max(n = 10, order_by = max_exp)
+```
+
+
+

@@ -1,5 +1,7 @@
-# Combining timepoints into a single object for downstream clustering and UMAP projection
-# Filters out ribosomal genes from variable genes used for clustering
+# This script creates the Seurat object used for all downstream analyses. 
+# The counts tables for all timepoints are combined into the same object,
+# and are filtered and standardized using the scTransform pipeline.
+# The final output will be a Seurat object ready for clustering and UMAP projection.
 
 # load packages
 library(tidyverse)
@@ -22,7 +24,7 @@ he.48.csv <- read.csv("/work/bdm50/scRNA-seq/csv_anno/He48hpf_anno.csv", row.nam
 he.54.csv <- read.csv("/work/bdm50/scRNA-seq/csv_anno/He54hpf_anno.csv", row.names = 1)
 he.60.csv <- read.csv("/work/bdm50/scRNA-seq/csv_anno/He60hpf_anno.csv", row.names = 1)
 
-
+# create separate Seurat objects for each timepoint
 he.6 <- CreateSeuratObject(counts = he.6.csv, project = "6hpf", 
                            row.names = gene.names.6, min.cells = 3, min.features = 200)
 he.9 <- CreateSeuratObject(counts = he.9.csv, project = "9hpf", 
@@ -68,6 +70,7 @@ he.integrated <- merge(he.6, y = c(he.9, he.12, he.16, he.20, he.24, he.30, he.3
                        add.cell.ids = c("6hpf", "9hpf", "12hpf", "16hpf", "20hpf", "24hpf", "30hpf", "36hpf", "42hpf", "48hpf", "54hpf", "60hpf"), 
                        project = "HE_6-60hpf_Integrated")
 
+# Create a new feature for ribosomal genes
 he.integrated <- PercentageFeatureSet(he.integrated, pattern = "\\b\\w*Rp[sl]\\w*\\b", col.name = "percent.Rb")
 
 he.integrated$group <- factor(he.integrated$group, levels = c("6hpf", "9hpf", "12hpf", "16hpf", "20hpf", "24hpf", "30hpf", "36hpf", "42hpf", "48hpf", "54hpf", "60hpf"))
@@ -85,9 +88,9 @@ save(RNA_nFeature_Count_scatter, file = "/work/bdm50/scRNA-seq/plots/RNA_nFeatur
 he.integrated <- subset(he.integrated, subset = nFeature_RNA > 200 & nCount_RNA < 10000 & nFeature_RNA < 4000)
 
 
-# Normalize and scale the data
+# Normalize and scale the data using SCTransform and the "glmGamPoi" method
+# Regress out the effect of the ribosomal genes
 he.integrated <- SCTransform(he.integrated, method = "glmGamPoi", verbose = T, variable.features.n = 6000 , vars.to.regress = "percent.Rb" )
-
 
 
 # Run PCA
@@ -97,13 +100,9 @@ pca_VizDim <- VizDimLoadings(he.integrated, dims = 1:4, reduction = "pca")
 pca_DimPlot <- DimPlot(he.integrated, reduction = "pca")
 pca_DimHeatmap <- DimHeatmap(he.integrated, dims = 1:4, cells = 500, balanced = T)
 
-save(he.integrated, file = "/work/bdm50/scRNA-seq/HE_6-60hpf_integrated-SCT6k.Rda")
-
-
 save(pca_VizDim, file = "/work/bdm50/scRNA-seq/plots/pca_VizDim.Rda")
 save(pca_DimPlot, file = "/work/bdm50/scRNA-seq/plots/pca_DimPlot.Rda")
 save(pca_DimHeatmap, file = "/work/bdm50/scRNA-seq/plots/pca_DimHeatmap.Rda")
-
 
 
 # Determine the dimensionality of the dataset
@@ -112,9 +111,6 @@ elbow_plot <- ElbowPlot(he.integrated, ndims = 200)
 save(elbow_plot, file = "/work/bdm50/scRNA-seq/plots/elbow_plot.Rda")
 
 
-
-
-
-
+# Save the Seurat object for the next step
 save(he.integrated, file = "/work/bdm50/scRNA-seq/HE_6-60hpf_integrated-SCT6k.Rda")
 
