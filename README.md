@@ -6,6 +6,25 @@ This repository contains all the code used to run the analyses presented in ____
 
 ## Required packages
 
+The following packages and versions were used for analyses in R versions 4.2.0 and 4.3.0, depending on the package availability in each version of R:
+- Seurat v4.3.0 (R v4.2.0)
+- SeuratObject v4.1.3 (R v4.2.0)
+- sctransform v0.3.5 (R v4.2.0)
+- AnnotationForge v1.40.2 (R v4.2.0)
+- Mfuzz v2.58.0 (R v4.2.0)
+- DESeq2 v1.38.0 (R v4.2.0)
+- SingleCellExperiment v1.20.1 (R v4.2.0)
+- tidyverse v2.0.0 (R v4.2.0 and v4.3.0)
+- scCustomize v2.0.1 (R v4.3.0)
+- clusterProfiler v4.10.0 (R v4.3.0)
+- enrichplot v1.22.0 (R v4.3.0)
+- ComplexHeatmap v2.18.0 (R v4.3.0)
+- ape v5.7-1 (R v4.3.0)
+
+For the Waddington-OT pipeline, wot v1.0.8 was run in Python v3.8.
+
+For the gene function analysis, InterProScan v5.64-96.0 was run on the Duke Compute Cluster.
+
 
 ## Analysis pipeline
 
