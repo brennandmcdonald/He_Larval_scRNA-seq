@@ -1,0 +1,192 @@
+SPU_000007	Sp-Wnt7	WNT	wingless-related MMTV integration site 7
+SPU_000310	Sp-Vegfr10	receptor tyrosine kinase	vascular endothelial growth factor receptor-like with 10 Ig-type domains, Flt1/4-like, Kdr-like, Sp-VEGFR-10, Sp-Pdgfr/vegfrL
+SPU_000668	Sp-Univin	Transforming growth factor beta	Univin, Gdf1/3-like, Sp-Unvn
+SPU_000669	Sp-Bmp2/4	Transforming growth factor beta	bone morphogenetic protein 2/4, Sp-Bmp2/4_1
+SPU_000756	Sp-Nkx2-2	homeobox-NKL	NK2 homeobox 2, Sp-Nk2-2, Sp-NK2.2
+SPU_000757	Sp-Nkx2-1	homeobox-NKL	NK2 homeobox 1, Sp-Nkx2.1, Sp-NK2.1, TTF1,Titf1
+SPU_000975	Sp-FoxF	Forkhead	forkhead box F
+SPU_001113	Sp-Snail	zf-C2H2	snail homolog, Sp-Sna, Sp-Snai
+SPU_001628	Sp-Wnt3	WNT	wingless-type MMTV integration site family, member 3
+SPU_001739	Sp-Unc4.1_1	homeobox-PRD	UNC homeobox (duplicate), Uncx, Uncx4.1, Sp-Unc4-1
+SPU_002129	Sp-Not	homeobox-NKL	notochord homeobox-like, Noto, flh
+SPU_002551	Sp-Egfiii	EGF_CA superfamily, avidin superfamily	fibropellin c
+SPU_002592	Sp-Emx	homeobox-NKL	empty spiracles homeobox, Emx1/2
+SPU_002603	Sp-SoxC	sox-hmg	SRY (sex determining region Y)-box C, Sox4/11/12-like
+SPU_002631	Sp-Hox11/13b	homeobox-HOXL	homeobox 11/13b
+SPU_002634	Sp-Hox7	homeobox-HOXL	homeobox 7, Sp-Hox7_1
+SPU_002662	Sp-Bmp5-8_1	Transforming growth factor-beta	bone morphogenetic protein 5/6/7/8-like, SpBmp5-7, Sp-Bmp5/8, Sp-Bmp5/6/7/8_1
+SPU_002815	Sp-Dlx	homeobox-NKL	distal-less homeobox, Dll
+SPU_002874	Sp-Ets1/2	Ets, SAM/Pointed domain	v-ets erythroblastosis virus E26 oncogene homolog 1/2-like, pointed (pnt) homolog
+SPU_002950	Sp-Hh_1	Hedgehog	hedgehog (hh) homolog
+SPU_003102	Sp-Jun	Jun, basic zipper (bZIP)	jun proto-oncogene-like, AP-1-like
+SPU_003166	Sp-Myc	Myc, bHLH	myelocytomatosis viral related oncogene, Myc/Mycn/Mycl-like
+SPU_003312	Sp-NpC2L_1	Sp-Patched	Ptc; patched
+SPU_003438	Sp-Pak1	STE20	p21 protein (Cdc42/Rac)-activated kinase 1-like, Pak, Pak1/2/3, SpPak1
+SPU_003534	Sp-Pak1_1	STE20	p21 protein (Cdc42/Rac)-activated kinase 1-like, Pak, Pak1/2/3, SpPak1, Sp-Pak(p21)ph
+SPU_003591	Sp-Nanos2	zf-nanos	nanos-like 2, Sp-Nan2
+SPU_003655	Sp-Fzd1/2/7	Frizzled	frizzled homolog 1/2/7-like, SpFz1/2/7, Sp-fz, Sp-Frizz1/2/7
+SPU_004021	Sp-Lhx2_1	homeobox-LIM	LIM homeobox 2, Sp-Limc1, Sp-Lim-c1
+SPU_004148	Sp-Krl	zinc finger (kruppel-like)	transcriptional repressor Krl-like, SpKrl
+SPU_004340	Sp-Smo	Frizzled	smoothened (Drosophila) homolog, Sp-Smooth, Sp-Smoothened
+SPU_004414	Sp-Hlf	basic zipper	hepatic leukemia factor-like, Hlf/Tef/Dbp-like, PAR-domain protein 1 (Pdp1) homolog
+SPU_004551	Sp-FoxB	Forkhead	forkhead box B
+SPU_004599	Sp-Pitx2	homeobox-PRD	paired-like homeodomain 2
+SPU_004621	Sp-Fng	Fringe-like	fringe glycosyltransferase, O-fucosylpeptide 3-beta-N-acetylglucosaminyltransferase, Sp-Lfng, Sp-Fringe
+SPU_004746	Sp-Fgfr2_1	adhesion protein	fibroblast growth factor receptor-like (partial), Cad96Ca-like, Sp-Fn3/Igf_29
+SPU_004747	Sp-Fgfr2	Protein tyrosine kinase	fibroblast growth factor receptor-like, Cad96Ca-like, Sp-FgfrL2, Sp-Fn3/Igf_29, Sp-Tk8
+SPU_004983	Sp-Chordin	chordin	chordin, short gastrulation (sog) homolog, Sp-Chrd
+SPU_005170	Sp-Hox7_1	Hox	none
+SPU_005531	none	none	none
+SPU_005718	Sp-Dri	ARID/BRIGHT 	dead ringer/retained-like, AT-rich interactive domain-containing protein 3, Arid3, SpDri, SpDeadringer, Sp-Dr, Sp-Dr_1
+SPU_006242	Sp-Fgf	Fibroblast Growth Factor	fibroblast growth factor, Sp-Fgf9/16/20
+SPU_006462	Sp-Gcm	GCM	glial cells missing homolog, Gcm1/2-like
+SPU_006676	Sp-FoxA	Forkhead	forkhead box A, fkh, HNF3
+SPU_006753	Sp-E2f3	E2F/DP	E2F transcription factor 3-like, E2f1/2/3-like, SpE2F3, Sp-E2F
+SPU_006786	Sp-Pax6	PAX, Paired box	paired box 6, oculorhombin
+SPU_006787	Sp-Pax6_1	homeobox-PRD	paired box 6, oculorhombin
+SPU_006789	Sp-Smo_1	Frizzled	smoothened (Drosophila) homolog, Sp-Smooth_1
+SPU_006917	Sp-Runt1	Runx	runt-related transcription factor-like-1, Runx-like, SpRunt-1, Sp-Runt-1, SpRunt
+SPU_006991	Sp-Lim1	homeobox-LIM	LIM homeobox, Lhx1/5
+SPU_007004	Sp-Activin	Transforming growth factor beta	activin, inhibin beta (Inhb)-like, dawdle (daw) homolog, Gdf11-like, Sp-Bmp11
+SPU_007147	Sp-Ngn	bHLH	neurogenin, Neurog1/2/3-like, Sp-Neurog
+SPU_008112	Sp-Phd1	homeobox-PRD	paired homeodomain 1, Sp-Phb1
+SPU_008117	Sp-Shr2	nuclear hormone receptor	steroid hormone receptor 2, SpSHR2, nuclear receptor subfamily 2 group C-like, Nr2c-like
+SPU_008196	Sp-Hnf1	homeobox-HNF	HNF1 homeobox (partial), hepatocyte nuclear factor 1, Hnf1a/b
+SPU_008351	Sp-Tel_1	ets	ets variant 6 (TEL oncogene) and 7-like (partial duplicate), Etv6/7-like, Yan-like
+SPU_008528	Sp-Ets4	Ets	SAM pointed domain containing ets transcription factor-like, Spdef, PDEF
+SPU_008908	Sp-Vasa	DEAD-box helicase	vasa, vas, mvh
+SPU_009048	Sp-Pax2	none	Sp-Pax2/5/8_1
+SPU_009155	Sp-Ctnnb	ARM repeat	catenin (cadherin associated protein) beta 1, beta-catenin, Catnb
+SPU_009178	Sp-FoxO	Forkhead	none
+SPU_009263	Sp-glysynk3b	none	none
+SPU_009465	Sp-Hey	bHLH	hairy/enhancer-of-split related with YRPW motif
+SPU_009520	Sp-Tcf	sox-hmg	T-cell factor 1/lymphoid enhancer-binding factor 1-like, Tcf7-like, SpTcf/Lef, Sp-Tcf, Sp-Lef1
+SPU_009771	Sp-FoxG	Forkhead	Forkhead box G, Bf1, BF-1,\nFoxG1
+SPU_009911	Sp-Lefty	Transforming growth factor beta	Left right determination factor, lft,antivin
+SPU_010118	Sp-P38mapk_1	MAPK	MAPK14, p38 alpha
+SPU_010168	Sp-Fog	zf	Friend of GATA-like, Zfpm-like
+SPU_010305	Sp-Hnf1_1	homeobox-HNF	HNF1 homeobox (partial), hepatocyte nuclear factor 1-like, Sp-Hnf1aL, Sp-Hnf1L
+SPU_010351	Sp-IrxA	homeobox-TALE	iroquois homeobox A
+SPU_010403	Sp-FoxY	Forkhead	forkhead box Y, forkhead\nC-like
+SPU_010424	Sp-Otx	homeobox-PRD	orthodenticle homolog
+SPU_010635	Sp-Gatae	GATA zinc finger	GATA binding protein E, SpGatae, SpGata-e, Gata4/5/6-like
+SPU_011029	Sp-RhoA	Ras superfamily, Rho family	Sp-RhoA/B/C;  Sp-Rho1, RAS Homology A
+SPU_011064	Sp-Nodal	Transforming growth factor beta	nodal homolog
+SPU_011130	Sp-Wnt16	WNT	wingless-type MMTV integration site family, member 16
+SPU_011286	Sp-P38mapk	none	p38 mitogen activated protein kinase, MAPK14, p38 alpha
+SPU_011297	Sp-Mbx1	homeobox-PRD	diencephalon/mesencephalon homeobox 1, Dmbx1, Sp-MBX
+SPU_011756	Sp-Wnt1	WNT	wingless-type MMTV integration site family, member 1
+SPU_012238	Sp-Hh	Hint (Hedgehog/Intein) domain	hedgehog (hh) homolog
+SPU_012253	Sp-Eve	homeobox-HOXL	even-skipped homeobox, Sp-Evx
+SPU_012384	Sp-FoxQ2	Forkhead	forkhead box Q2
+SPU_012469	Sp-Elk	Ets	Elk1/3/4-like, member of ETS oncogene family, Net-like, Sap-like
+SPU_012490	Sp-Hmx	homeobox-NKL	H6 homeobox, SpHmx
+SPU_012491	Sp-Nk1	homeobox-NKL	NK1 homeobox, NK1 transcription factor-related protein, Nkx1, Sax, slouch homolog
+SPU_012645	Sp-Z166	zf-C2H2	zinc finger protein 166, growth factor independent 1 transcription repressor (Gfi1)-like
+SPU_012699	Sp-Nkx6-1	homeobox-NKL	NK6 homeobox 1, Sp-NK6.1
+SPU_012772	Sp-Klf7	zf-C2H2	Kruppel-like factor 7-like, Klf6/7, z86
+SPU_012786	Sp-Bmp5-8	Transforming growth factor-beta	bone morphogenetic protein 5/6/7/8-like, SpBmp5-7, Sp-Bmp5/8, Sp-Bmp5/6/7/8
+SPU_012832	Sp-Gsk3_1	none	glycogen synthase kinase 3 (duplicate exon), Sp-Gsk
+SPU_013015	Sp-Bra	T-box	brachyury, T, TA, brachyenteron (byn) homolog, SpBra
+SPU_013047	Sp-Nkx3-2	homeobox-NKL	NK3 homeobox 2-like, Bapx1-like, bagpipe (bap) homolog, NK3, Sp-NK3.2
+SPU_013570	Sp-Wnt6	WNT	wingless-type MMTV integration site family, member 6
+SPU_013698	Sp-Nrl	none	none
+SPU_013704	Sp-Unc4.1	homeobox-PRD	UNC homeobox, Uncx, Uncx4.1, Sp-Unc4.1_1
+SPU_013869	Sp-Eya	EYA (Asp-based protein tyrosine phosphatases)	Eyes absent 
+SPU_014294	none	none	none
+SPU_014295	Sp-Ptc	Sterol-sensing	patched (ptc) homolog, Sp-Ptch1, Sp-Ptc, Sp-NpC2L
+SPU_014539	Sp-Pax2/5/8	paired box domain	paired box 2/5/8, Pax258, Sp-Pax2-5-8, Sp-Pax2
+SPU_014721	Sp-Pmar1a	homeobox-PRD	paired-class micromere anti-repressor 1a, Hbox12, micro1
+SPU_014722	Sp-Pmar1b	homeobox-PRD	paired-class micromere anti-repressor 1b, Hbox12, micro1
+SPU_015243	Sp-FoxN2/3	Forkhead	forkhead box N2/3, checkpoint suppressor\n1
+SPU_015358	Sp-Egr	zf-C2H2	early growth response, z60, stripe homolog
+SPU_015466	Sp-Numb	Numb	numb (Drosophila) homolog, Nb
+SPU_015613	Sp-Nanos1	zf-nanos	nanos-like 1, Sp-Nanos2c
+SPU_015614	Sp-Nanos1_1	zf-nanos	nanos-like 1 (partial duplicate), Sp-Nanos2b
+SPU_015828	Sp-Pmar1c	homeobox-PRD	paired-class micromere anti-repressor 1c, Hbox12, micro1
+SPU_015829	Sp-Pmar1d	homeobox-PRD	paired-class micromere anti-repressor 1d, Hbox12, micro1
+SPU_015982	Sp-Gsc	homeobox-PRD	goosecoid homeobox 
+SPU_015984	Sp-Prox1	homeobox-PROS	prospero-related homeobox 1-like, Prox1/2-like, prospero (pros) homolog
+SPU_016128	Sp-Delta	DSL	Delta (Dl) homolog, neurogenic locus protein delta, Dll1/4-like
+SPU_016443	Sp-Brn1/2/4	homeobox-POU	POU class 3 homeobox, Pou3f, Sp-Brn1-2-4, Sp-brn124
+SPU_016449	Sp-Onecut	homeobox-CUT	onecut homeobox, Onecut1/2/3-like, SpHnf6, Sp-Hnf6
+SPU_016685	Sp-Ap2	transcription factor AP-2	transcription factor AP-2, Sp-Tfap2
+SPU_016881	Sp-SoxE	sox-hmg	SRY (sex determining region Y)-box E, Sox8/9/10
+SPU_017348	Sp-Atbf1	zf-C2H2, homeobox-ZF	AT-binding transcription factor 1-like, zinc finger homeobox, Sp-Zfhx, z30
+SPU_017379	Sp-Six1/2	homeobox-SINE	SIX homeobox 1/2, sine oculis-related homeobox
+SPU_017635	Sp-Pax4L	homeobox-PRD	paired class homeodomain containing
+SPU_017636	Sp-Pax4L_1	homeobox-PRD	paired class homeodomain containing, Sp-Hypp_886
+SPU_017642	Sp-Smad2/3	SMAD	SMAD family member 2/3-like, Madh2/3, Sp-smad2.3
+SPU_018126	Sp-Tgif	homeobox-TALE	TGFB-induced factor homeobox
+SPU_018393	Sp-Scratch	zf-C2H2	scratch homolog zinc finger protein, Sp-Scratch1, Sp-Scrt
+SPU_018483	Sp-Erg	Ets	v-ets oncogene related (Erg)-like, Friend leukemia integration 1 (Fli1)-like
+SPU_018692	Sp-Gro	Groucho/TLE/Grg	co-repressor protein groucho, transducin-like enhancer of split-like, Tle-like, Sp-Groucho, Sp-Tle1/Groucho
+SPU_018908	Sp-Six3	homeobox-SINE	SIX homeobox 3, sine oculis-related homeobox 3/6, Sp-Six3/6
+SPU_019002	Sp-FoxQ2_1	Forkhead	forkhead box Q2 (copy 2)
+SPU_019290	Sp-Otp	homeobox-PRD	orthopedia homeobox
+SPU_020110	Sp-Krl_1	zf-C2H2	transcriptional repressor Krl-like (partial duplicate), Sp-Z474_1
+SPU_020371	Sp-Wnt8	WNT	wingless-type MMTV integration site family, member 8
+SPU_020451	Sp-Bra_1	T-box	brachyury, T, TA
+SPU_020565	Sp-Msxl	homeobox-NKL	Msh homeobox-like, Msxlx
+SPU_020676	Sp-Fn3f_67	adhesion protein	none
+SPU_020677	Sp-Fgfr	Receptor tyrosine kinase	fibroblast growth factor receptor, bFgfR-like, Sp-Fgfr1, Sp-Fn3f_67
+SPU_020722	Sp-Smad1/5/8_1	SMAD	SMAD family member 1/5/8(9)-like (duplicate), Madh1/5/8-like
+SPU_020803	Sp-Trk	receptor tyrosine kinase	neurotrophic tyrosine receptor kinase, Ntrk, Ntrk1/2/3-like, TrkA/B/C-like
+SPU_021173	Sp-Fos	basic zipper	Fos(FBJ osteosarcoma oncogene)-like, Atf3/Jdp2-like
+SPU_021313	Sp-Lhx2	homeobox-LIM	LIM homeobox 2
+SPU_021497	Sp-Bmp2/4_1	Transforming growth factor beta	bone morphogenetic protein 2/4
+SPU_021566	Sp-SuH	beta-trefoil DNA-binding domain (BTD)	suppressor of hairless homolog, Su(H), RBPJ homolog, Sp-Shrls 
+SPU_021608	Sp-HesC	bHLH	hairy and enhancer of split-like C, Sp-Hes
+SPU_022038	Sp-Capk	CAP domain	none
+SPU_022554	Sp-Acsc3	bHLH	achaete(ac)-scute(sc) homolog 3, Sp-Ac-Sc3, Sp-ac-sc1a, Sp-Ac/Sc3
+SPU_022816	Sp-Alx4	homeobox-PRD	aristaless-like homeobox 4-like, Alx1/3/4-like
+SPU_022817	Sp-Alx1_1	homeobox	aristaless-like homeobox 1-like, Cart1/Alx3/Alx4 subfamily-like
+SPU_022820	Sp-SoxB1	sox-hmg	SRY-box B1, SpSoxB1
+SPU_022844	Sp-Ptc	Sterol-sensing	patched (ptc) homolog, Sp-Ptch1, Sp-Patched, Sp-NpC2L
+SPU_022916	Sp-Fzd5/8	Frizzled	frizzled homolog 5 and 8-like, Sp-Frizz5/8, SpFz5/8
+SPU_023014	Sp-Fzd9/10	Frizzled 	frizzled homolog 9 and 10-like, Sp-Frizz9/10, SpFz9/10
+SPU_023107	Sp-Smad1/5/8	SMAD	SMAD family member 1/5/8(9)-like, Madh1/5/8-like, Sp-smad1.5.8, Sp-Smad1/5/8_1
+SPU_023177	Sp-Hbn	homeobox-PRD	homeobrain
+SPU_023386	Sp-Tbx2/3	T-box	T-box 2/3, omb, Sp-Tbx2-3
+SPU_023463	Sp-Wnt4	WNT	wingless-type MMTV integration site family member 4, Sp-Wnt4_1, Sp-Wnt4_2
+SPU_023654	Sp-GataL	none	GATA transcription factor [Asterina miniata]-like
+SPU_023730	Sp-Isl	homeobox-LIM	ISL LIM homeobox
+SPU_023893	Sp-Tlx	homeobox-NKL	T-cell leukemia homeobox-like, Sp-Tlx3
+SPU_023905	Sp-Fringe	none	none
+SPU_024139	Sp-FoxC	Forkhead	forkhead box C
+SPU_024189	Sp-Sp5	zf-C2H2	Sp5 transcription factor-like, z199
+SPU_024669	Sp-Wnt4_1	WNT	wingless-type MMTV integration site family, member 4
+SPU_024903	Sp-Ese	Ets	epithelium-specific ets factor-like, Ehf-like, Elf3/5-like
+SPU_024946	Sp-WntA	WNT	wingless-type MMTV integration site family member A, SpWnt-A, SpWntA_1
+SPU_024947	Sp-WntA_1	WNT	none
+SPU_025010	Sp-FoxK	Forkhead	forkhead box K, Foxk1/2-like
+SPU_025113	Sp-SoxB2	sox-hmg	SRY-box B2, SpSoxB2
+SPU_025302	Sp-Alx1	homeobox-PRD	aristaless-like homeobox 1-like, Alx1(Cart1)/Alx3/Alx4 subfamily-like, Sp-Alx1_1
+SPU_025329	none	none	none
+SPU_025584	Sp-Tbr	T-box	T-box brain-like, Eomes-like, Tbx21-like, ske-T
+SPU_025601	Sp-Dr_1	ARID/BRIGHT DNA binding domain protein	none
+SPU_025612	Sp-Runt1_1	none	SpRunt-1, SpRunt
+SPU_025646	Sp-Dsh	Dishevelled family	Dishevelled
+SPU_025986	none	none	none
+SPU_026277	Sp-Wnt5	WNT	wingless-type MMTV integration site family member 5
+SPU_026620	Sp-Sip1	SIP1 superfamily	survival of motor neuron protein interacting protein 1
+SPU_026877	Sp-Irf4	IRF	interferon regulatory factor 4-like
+SPU_027015	Sp-GataC	zf-GATA	GATA binding protein C, SpGATAc, Gata1/2/3-like
+SPU_027018	none	none	none
+SPU_027053	Sp-Ets1/2_1	Ets	v-ets erythroblastosis virus E26 oncogene homolog 1/2-like (partial duplicate), Sp-Ets1-2
+SPU_027215	Sp-Hhex	homeobox-NKL	hematopoietically expressed homeobox, Sp-HEX, Hhex, Prh, Hmph
+SPU_027235	Sp-Blimp1	zf-C2H2, SET domain	B lymphocyte induced maturation protein-like, PRDM1-like, blimp1/krox, SpKrox1
+SPU_027472	Sp-Insm	zf-C2H2	insulinoma-associated protein, Insm1/2,  z176, nerfin homolog, Sp-Ia1
+SPU_027671	none	none	none
+SPU_027672	none	none	none
+SPU_027914	Sp-Gsk3	STK	glycogen synthase kinase 3, Gsk3a/b, Sp-glysynk3b
+SPU_027969	Sp-FoxJ1	Forkhead	forkhead box J1
+SPU_028061	Sp-Dach	SKI/SNO/DAC	dachshund (dac) homolog, Sp-Dach1, Sp-Dac
+SPU_028093	Sp-Scl	bHLH	stem cell protein-like, Tal1-like, Lyl1-like, HLH3B homolog
+SPU_028120	Sp-Dmrt	DM domain	doublesex and mab-3 related transcription factor-like 
+SPU_028148	Sp-Acsc	bHLH	achaete(ac)-scute(sc) homolog, Ascl1-like, Sp-Ac/Sc
+SPU_028422	Sp-Rxr	nuclear receptor	retinoid x receptor, NR2B
+SPU_028479	Sp-Tel	Ets	ets variant 6 (TEL oncogene) and 7-like (partial), Etv6/7-like, Yan-like
+SPU_028698	Sp-FoxO_1	Forkhead	none
+SPU_030148	Sp-Vegf3	PDGF/VEGF domain	vascular endothelial growth factor-like 3, PDGF- and VEGF-related factor 3 (Pvf3) homolog
+SPU_030149	Sp-Acsc5	bHLH	achaete (ac) and scute (sc) homolog, Ascl3/4/5-like, Sp-Ash3L

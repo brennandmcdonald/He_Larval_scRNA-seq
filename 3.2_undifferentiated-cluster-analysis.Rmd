@@ -1,0 +1,200 @@
+---
+title: "Undifferentiated Cluster Analysis"
+author: "Brennan McDonald"
+date: "2024-04-03"
+output: html_document
+---
+
+# Overview
+
+The following script provides the ability to run the analyses of the undifferentiated cell cluster in the He scRNA-seq dataset. The script contains the code needed to generate the plot used in Figure 5.
+
+
+```{r}
+# Load packages
+library(tidyverse)
+library(Seurat)
+library(scCustomize)
+library(org.Herythrogramma.eg.db) # This package was created in the "interproscan-output-processing.Rmd" script and provides the GO annotations
+library(clusterProfiler)
+library(ComplexHeatmap)
+library(circlize)
+library(ape)
+```
+
+```{r}
+CreateSeuratObject(load(
+  file = "HE_6-60hpf_integrated-SCT6k_195dim.Rda", 
+                        verbose = T))
+```
+
+
+This is the code that produces the DimPlot highlighting the undifferentiated cell cluster in the UMAP for He (Figure 5).
+
+```{r}
+Cluster_Highlight_Plot(he.integrated,
+                       cluster_name = "Set Aside",
+                       pt.size = 0.3,
+                       highlight_color = "lightpink") +
+  theme(legend.position = "none")
+```
+
+
+# Plot the number of cells in the undifferentiated cluster from each timepoint
+
+```{r}
+# Subset the integrated object for cluster 40, which corresponds to the 
+# undifferentiated cell cluster
+undiff <- subset(he.integrated, seurat_clusters == 40)
+
+# Number of cells in undifferentiated cell cluster over time
+undiff@meta.data %>% 
+  group_by(Stage) %>% 
+  summarize(count = n()) %>% 
+  add_row(Stage = "60hpf", count = 0) %>% 
+  mutate(time = c(6, 9, 12, 16, 20, 24, 30, 36, 42, 48, 54, 60)) %>% 
+  ggplot(mapping = aes(x = time, y = count)) + 
+  geom_line(color = "darkblue", linewidth = 0.8) +
+  geom_point() + 
+  scale_x_continuous(breaks = c(6, 9, 12, 16, 20, 24, 30, 36, 42, 48, 54, 60),
+                     limits = c(6, 60)) +
+  labs(y = "Number of Cells in Undifferentiated Cell Cluster", 
+       x = "Hours Post Fertilization") + 
+  theme_bw()
+```
+
+
+
+# GO analysis of marker genes for the undifferentiated cell cluster
+
+This code identifies the marker genes enriched in the undifferentiated cell cluster compared to all other celltype clusters in the Seurat object.
+
+```{r}
+undiff_markers <- FindMarkers(he.integrated, ident.1 = "Undifferentiated", 
+                         only.pos = T, 
+                         min.pct = 0.25, 
+                         logfc.threshold = 0.25)
+
+undiff_markers <- undiff_markers %>% 
+  filter(p_val_adj < 0.05) %>% 
+  slice_max(n = 500, order_by = avg_log2FC)
+
+# The top 500 genes in terms of log2FC (and filtered only for significant 
+# adjusted p-values) are saved to a csv file
+write.csv(undiff_markers, "data-files/undiff_full-markers.csv", row.names = T)
+```
+
+This performs GO over representation analysis on the top 500 enriched genes in the undifferentiated cell cluster, with all genes in the He genome used as a background gene set. This specifically looks for enriched biological processes among the enriched gene set.
+
+```{r}
+undiff_markers <- read_csv("data-files/undiff_full-markers.csv")
+
+hery_ids <- str_split_i(s_markers$gene, ":", 1)
+hery_ids <- str_replace_all(hery_ids, "HER-", "HER_")
+
+setaside_go <- enrichGO(gene = hery_ids,
+                  OrgDb = org.Herythrogramma.eg.db,
+                  keyType = "GID",
+                  ont = "BP", # look for biological processes
+                  pvalueCutoff = 0.05,
+                  pAdjustMethod = "BH",
+                  qvalueCutoff = 0.2)
+
+# This produces the barplot showing the GO enrichment results in Figure 5
+barplot(setaside_go, showCategory = 10) +
+  scale_fill_gradient(low = "blue", high = "lightblue")
+```
+
+
+# Plot the Waddington OT transition table heatmap
+
+The following code takes the transition table produced by the Waddington-OT analysis and plots it using the CustomHeatmap package.
+
+```{r}
+ttable <- read.csv("waddington-ot/data/Wot_transition-table_6-60hr-values.csv", row.names = 1)
+
+col_fun = colorRamp2(breaks = c(0,0.2), colors = c("white", "red"))
+
+Heatmap(matrix = ttable,
+        cluster_rows = F,
+        cell_fun = function(j, i, x, y, width, height, fill) {
+          grid.text(sprintf("%.3f", ttable[i,j]), x, y, gp = gpar(fontsize = 8))},
+        width = ncol(ttable)*unit(10, "mm"),
+        height = nrow(ttable)*unit(10, "mm"),
+        show_column_names = F, 
+        col = col_fun)
+```
+
+
+
+# Coexpression plots for germline marker genes
+
+This code takes a vector of cell UMIs that are known to co-express the two genes at a low or high level, and then produces a ggplot2 version of the UMAP with those cells highlighted.
+
+```{r}
+coexp_plot <- function(coords, low_exp, high_exp) {
+  coords1 <- coords %>% 
+    mutate(Expression = case_when(Cell %in% low_exp ~ "Low Coexpression",
+                                  .default = "No Coexpression")) %>% 
+    mutate(Expression = if_else(Cell %in% high_exp, "High Coexpression", Expression))
+    
+  coords1$Expression <- factor(coords1$Expression, 
+         levels = c("No Coexpression", "Low Coexpression", "High Coexpression"))
+  
+  coords1 %>%   
+    arrange(Expression) %>% 
+    ggplot(mapping = aes(x = UMAP_1, y = UMAP_2, 
+                         color = Expression)) +
+    geom_point(size = 0.3) +
+    scale_color_discrete(type = c("gray", "lightgreen", "darkgreen")) +
+    labs(color = "Coexpression Level") +
+    theme_classic() +
+    theme(legend.position = "none")
+}
+```
+
+Obtain the UMAP coordinates for each of the cells in the He Seurat object
+
+```{r}
+umap_coords <- as_tibble(Embeddings(he.integrated, reduction = "umap"))
+umap_coords$Cell <- rownames(Embeddings(he.integrated, reduction = "umap"))
+```
+
+The following code produces custom DimPlots showing the cells that co-express Nanos2, Vasa, and Seawi (three genes known to mark the germline) (see Figure 5).
+
+```{r}
+nanos_seawi_vasa05 <- WhichCells(he.integrated, 
+                           expression = `HER-1713.t1:Sp-Nanos2` >= 0.5 &
+                             `HER-1053.t1:Sp-Seawi-1` >= 0.5 &
+                             `HER-6048.t1:Sp-Vasa` >= 0.5)
+nanos_seawi_vasa1 <- WhichCells(he.integrated, 
+                           expression = `HER-1713.t1:Sp-Nanos2` >= 1 &
+                             `HER-1053.t1:Sp-Seawi-1` >= 1 &
+                             `HER-6048.t1:Sp-Vasa` >= 1)
+
+coexp_plot(coords = umap_coords,
+           low_exp = nanos_seawi_vasa05,
+           high_exp = nanos_seawi_vasa1)
+```
+
+
+
+# Cell type dendrogram
+
+The following code uses the Seurat function BuildClusterTree to make a phylogenetic tree of cell types in the He Seurat object, based on distances in gene expression space. The plot.phylo function from the Ape package is used to plot the tree for Figure S___.
+
+```{r}
+he.integrated <- BuildClusterTree(he.integrated,
+                                  verbose = T)
+
+tree <- Tool(object = he.integrated, slot = 'BuildClusterTree')
+
+plot.phylo(tree, 
+           direction = "downwards",
+           type = "phylogram",
+           use.edge.length = T,
+           cex = 0.5)
+```
+
+
+

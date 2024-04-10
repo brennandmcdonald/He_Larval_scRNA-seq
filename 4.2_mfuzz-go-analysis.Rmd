@@ -1,0 +1,68 @@
+---
+title: "GO Analysis"
+author: "Brennan McDonald"
+date: "2024-04-03"
+output: html_document
+---
+
+# Overview
+
+This script provides the code needed to perform the Gene Ontology (GO) over representation analysis for the genes expressed in the different Mfuzz clusters (which requires running "mfuzz-pipeline.Rmd" first). The plots generated in this script appear in Figure 7.
+
+```{r}
+# Load packages
+library(clusterProfiler)
+library(org.Herythrogramma.eg.db)
+library(tidyverse)
+library(enrichplot)
+```
+
+
+# GO analysis comparing genes in Mfuzz expression clusters
+
+```{r}
+# Load the expression profile assignments for each gene from the Mfuzz pipeline
+# This table was generated in the "mfuzz-pipeline.Rmd" script
+cluster_inputs <- read.csv("data-files/gene_cluster_assignments.csv")
+
+cluster_inputs %>% 
+  group_by(clusters) %>% 
+  summarize(n = n())
+```
+
+
+This code uses the GO over representation analysis pipeline provided by the `clusterProfiler` package. The plots are generated using functions from the `enrichplot` package. The genes expressed in each of the Mfuzz clusters (9 total) are compared to the genes expressed in the other clusters as a background set.
+
+```{r}
+# This generates a list, containing vectors with the genes found in each Mfuzz cluster
+cluster_list <- list()
+for (c in 1:9) {
+  genes <- cluster_inputs %>% 
+    filter(clusters == c) %>% 
+    dplyr::select(GID)
+  name <- paste("c", as.character(c), sep = "")
+  cluster_list[[name]] <- genes[,1]
+}
+
+# This perform the GO over representation analysis by comparing the genes in each
+# Mfuzz cluster against one another, looking for enriched Biological Processes
+cl_compare <- compareCluster(geneClusters = cluster_list,
+                             fun = "enrichGO",
+                             OrgDb = org.Herythrogramma.eg.db,
+                             keyType = "GID",
+                             ont = "BP", # Looks for enriched Biological Processes
+                             pvalueCutoff = 0.05,
+                             pAdjustMethod = "BH",
+                             qvalueCutoff = 0.2)
+
+
+# This generates the heatmap shown in Figure 7.
+simp_cl_compare <- gofilter(cl_compare, level = 4)
+simp_cl_similarities <- pairwise_termsim(simp_cl_compare)
+treeplot(simp_cl_similarities, showCategory = 4)
+```
+
+
+
+
+
