@@ -108,7 +108,8 @@ I then filter the late-expressed TFs for genes that show strong localization to 
 ```{r}
 # For each of the TFs, extract their fold-change enrichment in each of the 
 # 3 cell types of interest relative to all other cell types in the Seurat object
-types = c("Rudiment Endomesoderm", "Vestibular Ectoderm", "Vegetal Ectoderm")
+types = c("Rudiment Ectoderm (Putative)", "Rudiment Ectoderm (Verified)", 
+          "Vegetal Ectoderm")
 tfs <- tibble(Gene = c(NA),
               cell_type = c(NA),
               avg_log2FC = c(NA),
