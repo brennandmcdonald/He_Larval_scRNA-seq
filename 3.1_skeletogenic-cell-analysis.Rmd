@@ -18,13 +18,16 @@ library(scCustomize)
 ```
 
 ```{r}
+# Load the He Seurat object
 CreateSeuratObject(load(
   file = "HE_6-60hpf_integrated-SCT6k_195dim.Rda", 
                         verbose = T))
 ```
 
+The Seurat object for Lytechinus variegatus was retrieved from 
+
 ```{r}
-lv.integrated <- readRDS("/Users/brennandmcdonald/Documents/Wray Lab/Alejo/hery_rds/control.rds")
+lv.integrated <- readRDS(".rds")
 ```
 
 

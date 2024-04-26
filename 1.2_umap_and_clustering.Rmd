@@ -19,7 +19,6 @@ library(viridis)
 ```
 
 ```{r}
-#setwd("/Users/brennandmcdonald/Documents/Wray Lab/scRNA-seq Project/HE scRNA-seq")
 CreateSeuratObject(load(
   file = "HE_6-60hpf_integrated-SCT6k_195dim.Rda", 
                         verbose = T))
@@ -38,7 +37,7 @@ nrow(he.integrated@meta.data)
 
 # Creates a violin plot of the distribution of number of RNA features and RNA 
 # transcripts found per cell in the dataset.
-# See figure S____
+# See Fig. S1
 VlnPlot(he.integrated, features = c("nFeature_RNA", "nCount_RNA"),
         group.by = "time_int", pt.size = 0)
 
@@ -78,7 +77,7 @@ write.csv(he.markers.save, file = "data-files/HE_6-60hr_cluster-markers.csv")
 ```
 
 
-Use the marker genes and previous literature to assign cell type identities to each of the clusters (see table S___ for the genes used to make each assignment).
+Use the marker genes and previous literature to assign cell type identities to each of the clusters (see Table S1 for the genes used to make each assignment).
 
 ```{r}
 Idents(he.integrated) <- "seurat_clusters"
@@ -98,7 +97,7 @@ new.cluster.ids <- c("Animal Pole Domain",
                      "Larval Ectoderm",
                      "Animal Pole Domain",
                      "Ciliary Band",
-                     "Vegetal Ectoderm",
+                     "Posterior Ectoderm",
                      "Larval Ectoderm",
                      "Larval Ectoderm",
                      "Ciliary Band",
@@ -109,7 +108,7 @@ new.cluster.ids <- c("Animal Pole Domain",
                      "Left Ectoderm",
                      "Animal Pole Domain",
                      "Blastocoelar",
-                     "Vegetal Ectoderm",
+                     "Posterior Ectoderm",
                      "Rudiment Ectoderm (Verified)",
                      "Rudiment Ectoderm (Verified)",
                      "Blastocoelar",
@@ -119,10 +118,10 @@ new.cluster.ids <- c("Animal Pole Domain",
                      "Animal Pole Domain",
                      "Neural",
                      "Rudiment Ectoderm (Putative)",
-                     "Vegetal Ectoderm",
+                     "Posterior Ectoderm",
                      "Larval Ectoderm",
                      "Unknown",
-                     "Vegetal Ectoderm",
+                     "Posterior Ectoderm",
                      "Ciliary Band",
                      "Early Mesoderm",
                      "Neural",
@@ -200,11 +199,9 @@ top10markers <- celltype.markers %>%
 write.csv(top10markers, file = "data-files/HE_6-60hr_celltype-markers.csv")
 ```
 
-The following code uses the curated set of celltype marker genes (from table S___) to generate a dotplot showing expression of each of the genes in each celltype for Figure S___.
+The following code uses the curated set of celltype marker genes (from Table S1) to generate a dotplot showing expression of each of the genes in each celltype for Fig. S2.
 
 ```{r}
-library(scCustomize)
-
 all_celltype_genes <- c("HER-17729.t1:Sp-Ccnr2",
 "HER-33043.t1:Sp-Yp303",
 "HER-8313.t1:Sp-El1L4",
@@ -291,41 +288,16 @@ levs <- factor(c("Early Ectoderm",
                  "Rudiment Ectoderm (Putative)",
                  "Rudiment Ectoderm (Verified)",
                  "Ciliary Band",
-                 "Vegetal Ectoderm",
+                 "Posterior Ectoderm",
                  "Unknown"))
 
 Idents(he.integrated) <- factor(he.integrated@active.ident, levels = levs)
 
-# This generates the dotplot of celltype marker genes for Figure S___
+# This generates the dotplot of celltype marker genes for Figure S2
 DotPlot_scCustom(he.integrated,
                  features = all_celltype_genes,
                  x_lab_rotate = T,
                  flip_axes = T)
-```
-
-
-
-## Export featureplots for figure 8
-
-```{r}
-library(scCustomize)
-library(viridis)
-
-search <- "Msp130r2"
-gene_id <- rownames(he.integrated@assays$RNA@counts)[grep(search, rownames(he.integrated@assays$RNA@counts))]
-gene_id
-
-#AverageExpression(he.integrated, features = gene_id[1])
-#AggregateExpression(he.integrated, features = gene_id[1])
-FeaturePlot(he.integrated, features = gene_id[1])
-
-# Export as 6x8.5 for figure 8
-FeaturePlot_scCustom(he.integrated, 
-                     features = gene_id[1],
-                     colors_use = viridis_dark_high,
-                     pt.size = 0.3,
-                     order = T # need to decide on this
-                     )
 ```
 
 

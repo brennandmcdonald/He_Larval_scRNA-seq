@@ -26,7 +26,7 @@ CreateSeuratObject(load(
 
 # Subsetting and re-clustering the neural cell cluster
 
-Based on the marker genes expressed in the clusters of the full He Seurat object, I selected the clusters that showed expression of neural-related genes, such as Syt4 and Secrtag. I isolated these clusters into a new Seurat object, `neural_sub`.
+Based on the marker genes expressed in the clusters of the full He Seurat object, we selected the clusters that showed expression of neural-related genes, such as Syt4 and Secrtag. We isolated these clusters into a new Seurat object, `neural_sub`.
 
 ```{r}
 nerve_clusters <- c(31, 39, 51, 53, 54, 56)
@@ -34,7 +34,7 @@ nerve_clusters <- c(31, 39, 51, 53, 54, 56)
 neural <- subset(he.integrated, seurat_clusters %in% nerve_clusters)
 ```
 
-I re-clustered the neural clusters at a higher resolution to learn about additional putative neural cell types. I then re-ran the UMAP algorithm on the re-clustered object to project the neural-only cells into UMAP space.
+We re-clustered the neural clusters at a higher resolution to learn about additional putative neural cell types. We then re-ran the UMAP algorithm on the re-clustered object to project the neural-only cells into UMAP space.
 
 ```{r}
 # Recluster at higher resolution
@@ -60,7 +60,7 @@ CreateSeuratObject(load(
 
 # Identifying neural cell types
 
-I then used the FindAllMarkers function to identify the marker genes for the new neural clusters.
+We then used the FindAllMarkers function to identify the marker genes for the new neural clusters.
 
 ```{r}
 # Get the marker genes for each cluster that are expressed in a minimum of 25% 
@@ -76,7 +76,7 @@ write.csv(export, "data-files/top-neural-markers.csv",
           row.names = F)
 ```
 
-I then used these marker genes, along with data from previous research on sea urchin nervous systems, to assign cell type identities to each of the neural clusters (see the marker genes used in Table S___).
+We then used these marker genes, along with data from previous research on sea urchin nervous systems, to assign cell type identities to each of the neural clusters (see the marker genes used in Table S2).
 
 ```{r}
 Idents(neural_sub) <- "seurat_clusters"
@@ -145,7 +145,7 @@ DimPlot_scCustom(neural_sub,
 ```
 
 
-The following code uses the curated set of neural cell type marker genes (from Table S___) to generate a dotplot showing expression of the genes in each cell type for Figure S___.
+The following code uses the curated set of neural cell type marker genes (from Table S2) to generate a dotplot showing expression of the genes in each cell type for Figure S4.
 
 ```{r}
 neural_celltype_markers <- c("HER-3624.t1:Sp-SoxC",
@@ -215,7 +215,7 @@ levs <- factor(c("ANE Neural Progenitors",
 
 Idents(neural_sub) <- factor(neural_sub@active.ident, levels = levs)
 
-# This generates the dotplot of neural cell type marker genes for Figure S___
+# This generates the dotplot of neural cell type marker genes for Figure S4
 # Export at 8.5x11
 DotPlot_scCustom(neural_sub,
                  features = neural_celltype_markers,
@@ -229,7 +229,7 @@ DotPlot_scCustom(neural_sub,
 
 The following section provides the code used to generate the clustered DotPlot of neural transcription factor gene expression in Figure 6.
 
-I first began by compiling a list of neural transcription factors published in Burke et al. (2006).
+We first began by compiling a list of neural transcription factors published in Burke et al. (2006).
 
 ```{r}
 hery_spu <- read_tsv("data-files/H_ery_SPU_hits_best.txt")
@@ -237,7 +237,7 @@ neural_spu <- read_tsv("data-files/neural_tfs.txt")
 ```
 
 
-I then merged the list of transcription factor gene names with the gene annotations for He from Davidson et al. (2022). I also added a few transcription factors that had been shown in other publications to have neural expression patterns.
+We then merged the list of transcription factor gene names with the gene annotations for He from Davidson et al. (2022). We also added a few transcription factors that had been shown in other publications to have neural expression patterns.
 
 ```{r}
 neural_hery <- hery_spu %>% 
@@ -267,7 +267,7 @@ write.csv(neural_hery, "data-files/neural_tfs_hery.csv",
 ```
 
 
-I then loaded the full He Seurat object and identified the neural transcription factors that had the highest average expression across all cells with a neural identity. The top 30 expressed genes were plotted in the clustered DotPlot presented in Figure 6.
+We then loaded the full He Seurat object and identified the neural transcription factors that had the highest average expression across all cells with a neural identity. The top 30 expressed genes were plotted in the clustered DotPlot presented in Figure 6.
 
 ```{r}
 neural_tf <- read_csv("data-files/neural_tfs_hery.csv")

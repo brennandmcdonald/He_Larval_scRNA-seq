@@ -7,7 +7,7 @@ output: html_document
 
 # Overview
 
-This script provides the code needed to convert the gene function annotation output (of the protein-coding genes in the He genome) from InterProScan into an orgDb package, using the tools provided by the `AnnotationForge` package. This will make it easy to filter the gene function annotation output for GO terms of interest and to perform GO over representation analyses.
+This script provides the code needed to convert the gene function annotation output (of the protein-coding genes in the He genome) from InterProScan into an `orgDb` package, using the tools provided by the `AnnotationForge` package. This will make it easy to filter the gene function annotation output for GO terms of interest and to perform GO over representation analyses.
 
 ```{r}
 # Load packages
@@ -18,7 +18,7 @@ library(AnnotationForge)
 
 # Make an orgdb package for He
 
-The following code will construct an orgDb package for He, using the InterProScan results as input. Unfortunately, the InterProScan output files are not in the GAF format required for input into the orgDb pipeline. I used the functionality provided by the Cyverse online platform to convert the output .xml file from InterProScan into the GAF format I needed. This involved using the InterProScan Results Function script described here: https://cyverse.atlassian.net/wiki/spaces/DEapps/pages/241881762/InterProScan+Results+Function.
+The following code will construct an orgDb package for He, using the InterProScan results as input. Unfortunately, the InterProScan output files are not in the GAF format required for input into the orgDb pipeline. We used the functionality provided by the Cyverse online platform to convert the output .xml file from InterProScan into the GAF format we needed. This involved using the InterProScan Results Function script described here: https://cyverse.atlassian.net/wiki/spaces/DEapps/pages/241881762/InterProScan+Results+Function.
 
 ```{r}
 # Import the InterProScan GO annotations, in GAF format
@@ -33,7 +33,7 @@ The GO annotation and He genome ananotation dataframes need to be modified into 
 
 ```{r}
 # Modify dataframes for input. 
-# A `GID` (gene ID) column needs to be the same across all of them
+# A "GID" (gene ID) column needs to be the same across all of them
 go <- go %>% 
   mutate(GID = DB_Object_ID, .before = Database)
 

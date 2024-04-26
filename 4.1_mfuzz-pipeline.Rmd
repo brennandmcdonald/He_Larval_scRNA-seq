@@ -25,9 +25,9 @@ library(ComplexHeatmap)
 
 # Pseudobulk the scRNA-seq data
 
-The Mfuzz pipeline requires bulk RNA-seq data. I performed pseudobulking of the scRNA-seq data, which sums up the expression of genes across all the cells within a time point.
+The `Mfuzz` pipeline requires bulk RNA-seq data. We performed pseudobulking of the scRNA-seq data, which sums up the expression of genes across all the cells within a time point.
 
-I utilized the tools provided by the DESeq2 package to perform this.
+We utilized the tools provided by the `DESeq2` package to perform this.
 
 ```{r}
 # Load the He Seurat object
@@ -36,7 +36,7 @@ CreateSeuratObject(load(
                         verbose = T))
 ```
 
-I converted the Seurat object into a SingleCellExperiment object to simplify the dataset for pseudobulking.
+We converted the Seurat object into a `SingleCellExperiment` object to simplify the dataset for pseudobulking.
 
 ```{r}
 counts <- he.integrated@assays$RNA@counts
@@ -109,7 +109,7 @@ save(dds, file = "data-files/deseq_object.Rda")
 
 # Mfuzz fuzzy c-means clustering of gene expression profiles
 
-I used the pseudobulked scRNA-seq data as input into the Mfuzz pipeline.
+We used the pseudobulked scRNA-seq data as input into the Mfuzz pipeline.
 
 The following code normalizes and standardizes the aggregated counts data.
 
@@ -158,7 +158,7 @@ mcounts <- standardise(mcounts)
 
 The following code then performs fuzzy c-means clustering on the normalized and standardized data.
 
-I first needed to establish the optimal number of clusters to use for the analysis (setting the value of k). I followed the cross-validation procedure established by Israel et al. (2016). This involves setting the number of clusters to be the largest value of k without having the correlation between any pair of cluster centroids be greater than r=0.85.
+We first needed to establish the optimal number of clusters to use for the analysis (setting the value of k). We followed the cross-validation procedure established by Israel et al. (2016). This involves setting the number of clusters to be the largest value of k without having the correlation between any pair of cluster centroids be greater than r=0.85.
 
 ```{r}
 # A custom function to find the maximum correlation value that is not 1 from a the matrix of pairwise correlation values between clusters outputted by mfuzz.
@@ -189,7 +189,7 @@ results <- tibble(ncluster = c(NA),
                   iteration = c(NA),
                   max_cor = c(NA))
 
-# I tested values of k ranging from 5 to 15. I ran the mfuzz function 10 times 
+# We tested values of k ranging from 5 to 15. We ran the mfuzz function 10 times 
 # for each value of k, and stored the maximum correlation value from each 
 # iteration in the results dataframe.
 niterations <- 10
@@ -204,19 +204,19 @@ for (c in crange) {
 }
 #results <- results[-1,]
 
-# I then averaged the maximum correlation value across the 10 iterations for 
+# We then averaged the maximum correlation value across the 10 iterations for 
 # each value of k
 results %>% 
   group_by(ncluster) %>% 
   summarize(mean_maxCorr = mean(max_cor))
 # the average maximum correlation between clusters (n=10 iterations) exceeds 0.85 when the total number of clusters is 10
-# by Israel et al 2016, I should choose 9 total clusters
+# by Israel et al 2016, We should choose 9 total clusters
 
 write.csv(results, "data-files/mfuzz_iterations.csv")
 ```
 
 
-Based on the cross validation procedure, the average maximum correlation between clusters (n=10 iterations) exceeds 0.85 when the total number of clusters is 10 (k=10). By Israel et al. (2016), I should choose 9 total clusters (k=9) for downstream Mfuzz analysis steps.
+Based on the cross validation procedure, the average maximum correlation between clusters (n=10 iterations) exceeds 0.85 when the total number of clusters is 10 (k=10). By Israel et al. (2016), We should choose 9 total clusters (k=9) for downstream Mfuzz analysis steps.
 
 ```{r}
 times <- c(6, 9, 12, 16, 20, 24, 30, 36, 42, 48, 54, 60)
@@ -291,7 +291,7 @@ write.csv(cluster_inputs, "data-files/gene_cluster_assignments.csv",
 
 Make a custom heatmap using `CustomHeatmap`, in which each row of the heatmap is a time point and each column is a Mfuzz cluster. Each cell is colored based on the centroid (standardized gene expression value) of genes in that cluster at that timepoint.
 
-I also used the functionality within the `Heatmap` function to perform k-means clustering of the Mfuzz clusters, with k=3. This resultss in 3 groups, which I labeled "High Early", "High Middle", and "High Late" based on when the expression of the cluster hit its peak.
+We also used the functionality within the Heatmap function to perform k-means clustering of the Mfuzz clusters, with k=3. This results in 3 groups, which we labeled "High Early", "High Middle", and "High Late" based on when the expression of the cluster hit its peak.
 
 ```{r}
 load(file = "data-files/mfuzz_object.Rda")

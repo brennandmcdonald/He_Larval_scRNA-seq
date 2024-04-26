@@ -19,7 +19,7 @@ library(clusterProfiler)
 
 # TF list curation
 
-I first used the GO annotations I generated for all genes in the He genome using InterProScan. I filter gene GO annotations for GO IDs corresponding to, or below "Transcription regulator activity" in the GO Molecular Function hierarchy (provided by the AmiGO database, https://amigo.geneontology.org/amigo).
+We first used the GO annotations we generated for all genes in the He genome using InterProScan. We filter gene GO annotations for GO IDs corresponding to, or below "Transcription regulator activity" in the GO Molecular Function hierarchy (provided by the AmiGO database, https://amigo.geneontology.org/amigo).
 
 GO terms to use (all under Molecular Function):
 - GO:0003700 - DNA-binding transcription factor activity
@@ -43,7 +43,7 @@ tfs <- AnnotationDbi::select(org.Herythrogramma.eg.db, keys = k,
 ```
 
 
-I generated a separate list of TFs using the gene list analyzed in Devens et al. (2023). This list was originally retrieved from an old version of Echinobase (https://www.echinobase.org/echinobase/). I filtered this list of genes for genes that were either labeled as "TranscriptionFactor" or "ZincFinger", both of which have DNA-binding transcription regulatory abilities.
+We generated a separate list of TFs using the gene list analyzed in Devens et al. (2023). This list was originally retrieved from an old version of Echinobase (https://www.echinobase.org/echinobase/). We filtered this list of genes for genes that were either labeled as "TranscriptionFactor" or "ZincFinger", both of which have DNA-binding transcription regulatory abilities.
 
 ```{r}
 # list of Echinobase genes from Devens et al. (2023)
@@ -62,7 +62,7 @@ devens_zf_keys <- devens_zf$Gene
 ```
 
 
-I then merged the two lists, such that there were no repeated SPU gene IDs. This was saved in a file for downstream analyses of TF expression patterns.
+We then merged the two lists, such that there were no repeated SPU gene IDs. This was saved in a file for downstream analyses of TF expression patterns.
 
 ```{r}
 # Merge the SPU hits from the GO term list and Hannah's list into union sets

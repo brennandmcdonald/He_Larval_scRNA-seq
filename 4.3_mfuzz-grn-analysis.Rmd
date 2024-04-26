@@ -30,9 +30,9 @@ CreateSeuratObject(load(
 
 # Curate a list of GRN genes for He
 
-The list of GRN genes used in the analyses of Davidson et al. (2022) was retrieved. I then filter this list for genes that are retained in the He Seurat object (those that showed significant variable expression in the scRNA-seq dataset).
+The list of GRN genes used in the analyses of Davidson et al. (2022) was retrieved. We then filter this list for genes that are retained in the He Seurat object (those that showed significant variable expression in the scRNA-seq dataset).
 
-Note that obtaining a GRN list that matched the genes in the Seurat object required some manual curation. To avoid ambiguities with this, you can skip this code block and move to the next section, "Analyze the expression profiles of GRN and TF genes", for which the need data files are provided.
+Note that obtaining a GRN list that matched the genes in the Seurat object required some manual curation. To avoid ambiguities with this, you can skip this code block and move to the next section, "Analyze the expression profiles of GRN and TF genes", for which the needed data files are provided.
 
 ```{r grn-curation}
 # Import the original list of GRN genes from Davidson et al. (2022)
@@ -46,7 +46,7 @@ grn <- grn %>%
 # The following code searches the He Seurat object for the genes in the original 
 # GRN list. If multiple transcripts with the same gene common name are found,
 # they are partitioned into the "options" list.
-# I manually examined the expression patterns of each gene option in the options
+# We manually examined the expression patterns of each gene option in the options
 # list to find the transcript with the highest expression for downstream analysis.
 options <- tibble(gene = c(NA), codes = c(NA))
 final_list <- tibble(gene = c(NA), code = c(NA))
@@ -61,15 +61,15 @@ for (dgene in grn$Gene) {
   }
 }
 
-# only genes included in the Seurat object will be used for downstream analyses
-# I used the transcript with the highest expression level for a given gene
+# Only genes included in the Seurat object will be used for downstream analyses
+# We used the transcript with the highest expression level for a given gene
 
 
 # Genes not found in He genome: Sp-NpC2L_1, Sp-Fng, Sp-Dri, Sp-glysynk3b, Sp-Gsk3, Sp-Pmar1b, Sp-Pmar1c, Sp-Trk, Sp-GataL
 # Genes not in Seurat object: Sp-Ets4, Sp-Pax2, Sp-Eya, Sp-Pax2/5/8, Sp-Pmar1d, Sp-Nanos1, Sp-Smad2/3, Sp-HesC, Sp-Rxr
 
 
-# Once I selected the final list of GRN genes, I refactored their gene-transcript
+# Once we selected the final list of GRN genes, we refactored their gene-transcript
 # codes to match the format in the Mfuzz object.
 dgrn$new_code <- rep(NA, length(grn$code))
 i <- 1
@@ -86,14 +86,14 @@ write.csv(grn, "data-files/dGRN_curated.csv", row.names = F)
 
 ## Assign profiles to GRN genes
 
-I matched the expression profile assignments from the Mfuzz analysis with the GRN genes from my curated list.
+We matched the expression profile assignments from the Mfuzz analysis with the GRN genes from my curated list.
 
 ```{r}
 grn <- read.csv("data-files/dGRN_curated.csv")
 
 
-# I modified the cluster identity assignments from the Mfuzz object into a
-# dataframe that I could filter for genes in the GRN list.
+# We modified the cluster identity assignments from the Mfuzz object into a
+# dataframe that we could filter for genes in the GRN list.
 clustered_idents <- tibble(membership_val = rep(NA, length(clustered$membership[,1])))
 for (i in 1:length(clustered$membership[,1])) {
   clustered_idents[i,1] <- max(clustered$membership[i,])
@@ -144,7 +144,7 @@ write.csv(grn, "data-files/dGRN_clusters.csv")
 
 ## Assign profiles to TF genes
 
-I then perform the same analysis for the curated transcription factor list (provided by the "tf-list-curation.Rmd" script). The TF genes are assigned expression profiles based on the Mfuzz analysis results.
+We then perform the same analysis for the curated transcription factor list (provided by the "tf-list-curation.Rmd" script). The TF genes are assigned expression profiles based on the Mfuzz analysis results.
 
 ```{r}
 # List of all genes with MFuzz cluster assignments
