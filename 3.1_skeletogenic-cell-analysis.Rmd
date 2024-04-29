@@ -24,10 +24,13 @@ CreateSeuratObject(load(
                         verbose = T))
 ```
 
-The Seurat object for Lytechinus variegatus was retrieved from 
+The following code loads the Seurat object for the Lytechinus variegatus dataset. To create this object, first run the script "1.3_Lv-seurat-object-generation.R".
 
 ```{r}
-lv.integrated <- readRDS(".rds")
+# Load the Lv Seurat object
+CreateSeuratObject(load(
+  file = "LV_2-24hpf_integrated-SCT2k_185dim.Rda", 
+                        verbose = T))
 ```
 
 
