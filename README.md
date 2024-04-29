@@ -35,7 +35,9 @@ The code for these analyses is separated across several files and repositories, 
 
     a) Run "1.1_timepoint-integration_and_scTransform.R" to integrate the single cell gene expression counts tables from each of the sample time points. This script creates the Seurat object used for all downstream analyses. The counts tables for all timepoints are combined into the same object, and are filtered and standardized using the scTransform pipeline. The final output will be a Seurat object ready for clustering and UMAP projection.
    
-    b) Run "1.2_umap_and_clustering.Rmd" to obtain the UMAP projection of the dataset and assign cell type identities. This script contains the code used to run the UMAP and clustering algorithms on the Seurat object containing the normalized data for all 12 timepoints in this study. It also contains code for identifying the marker genes for each cluster, assigning cell type identities to clusters, and generating figures used in the main paper (portions of Figure 2, S1, and S2, as well as Table S1).
+    b) Run "1.2_umap-and-clustering.Rmd" to obtain the UMAP projection of the dataset and assign cell type identities. This script contains the code used to run the UMAP and clustering algorithms on the Seurat object containing the normalized data for all 12 timepoints in this study. It also contains code for identifying the marker genes for each cluster, assigning cell type identities to clusters, and generating figures used in the main paper (portions of Figure 2, S1, and S2, as well as Table S1).
+
+    c) Run "1.3_Lv-seurat-object.generation.R" to create the Lytechinus variegatus (Lv) Seurat object used for all downstream analyses. scRNA-seq data for Lv was retrieved from Massri et al. (2021). The counts tables for all timepoints are combined into the same object, and are filtered and standardized using the SCTransform pipeline. The Seurat object is then clustered and run through the UMAP algorithm.
 
 2) Perform the broader analyses needed for assessing specific cell types in downstream steps.
 
