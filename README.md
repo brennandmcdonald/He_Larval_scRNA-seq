@@ -4,6 +4,9 @@
 
 This repository contains all the code used to run the analyses presented in "Contrasting the development of larval and adult body plans during the evolution of biphasic lifecycles in sea urchins" (2024).
 
+Full citation:
+McDonald, B. D., Massri, A. J., Escobar, A. B., Byrne, M., McClay, D. R., and Wray, G. A. (2024). Contrasting the development of larval and adult body plans during the evolution of biphasic lifecycles in sea urchins. *bioRxiv*. https://doi.org/10.1101/2024.04.30.591978. 
+
 
 ## Required packages
 
