@@ -750,3 +750,40 @@ lv_plot %>%
 ```
 
 
+
+
+## Feature plots for supplement
+
+```{r}
+search <- "Sm50"
+gene_id <- rownames(he.integrated@assays$RNA@counts)[grep(search, rownames(he.integrated@assays$RNA@counts))]
+gene_id
+
+# Export as 6x8.5
+FeaturePlot_scCustom(he.integrated, 
+                     features = "HER-12794.t1.1.5f2c6949:Sp-Alx1",
+                     colors_use = viridis_dark_high,
+                     pt.size = 0.3,
+                     order = T
+                     )
+
+# Export as 6x8.5
+FeaturePlot_scCustom(he.integrated, 
+                     features = "HER-29337.t1:Sp-Msp130r2",
+                     colors_use = viridis_dark_high,
+                     pt.size = 0.3,
+                     order = T
+                     )
+
+# Export as 6x8.5
+FeaturePlot_scCustom(he.integrated, 
+                     features = "HER-26257.t1:Sp-Sm50",
+                     colors_use = viridis_dark_high,
+                     pt.size = 0.3,
+                     order = T
+                     )
+```
+
+
+
+

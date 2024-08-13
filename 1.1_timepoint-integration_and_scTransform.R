@@ -11,44 +11,32 @@ Sys.setenv(VROOM_CONNECTION_SIZE=500072)
 
 
 # load the raw data
-he.6.csv <- read.csv("/counts-tables/He6hpf_anno.csv", row.names = 1)
-he.9.csv <- read.csv("/counts-tables/He9hpf_anno.csv", row.names = 1)
-he.12.csv <- read.csv("/counts-tables/He12hpf_anno.csv", row.names = 1)
-he.16.csv <- read.csv("/counts-tables/He16hpf_anno.csv", row.names = 1)
-he.20.csv <- read.csv("/counts-tables/He20hpf_anno.csv", row.names = 1)
-he.24.csv <- read.csv("/counts-tables/He24hpf_anno.csv", row.names = 1)
-he.30.csv <- read.csv("/counts-tables/He30hpf_anno.csv", row.names = 1)
-he.36.csv <- read.csv("/counts-tables/He36hpf_anno.csv", row.names = 1)
-he.42.csv <- read.csv("/counts-tables/He42hpf_anno.csv", row.names = 1)
-he.48.csv <- read.csv("/counts-tables/He48hpf_anno.csv", row.names = 1)
-he.54.csv <- read.csv("/counts-tables/He54hpf_anno.csv", row.names = 1)
-he.60.csv <- read.csv("/counts-tables/He60hpf_anno.csv", row.names = 1)
+he.6.csv <- read.csv("./counts-tables/He6hpf_anno.csv", row.names = 1)
+he.9.csv <- read.csv("./counts-tables/He9hpf_anno.csv", row.names = 1)
+he.12.csv <- read.csv("./counts-tables/He12hpf_anno.csv", row.names = 1)
+he.16.csv <- read.csv("./counts-tables/He16hpf_anno.csv", row.names = 1)
+he.20.csv <- read.csv("./counts-tables/He20hpf_anno.csv", row.names = 1)
+he.24.csv <- read.csv("./counts-tables/He24hpf_anno.csv", row.names = 1)
+he.30.csv <- read.csv("./counts-tables/He30hpf_anno.csv", row.names = 1)
+he.36.csv <- read.csv("./counts-tables/He36hpf_anno.csv", row.names = 1)
+he.42.csv <- read.csv("./counts-tables/He42hpf_anno.csv", row.names = 1)
+he.48.csv <- read.csv("./counts-tables/He48hpf_anno.csv", row.names = 1)
+he.54.csv <- read.csv("./counts-tables/He54hpf_anno.csv", row.names = 1)
+he.60.csv <- read.csv("./counts-tables/He60hpf_anno.csv", row.names = 1)
 
 # create separate Seurat objects for each timepoint
-he.6 <- CreateSeuratObject(counts = he.6.csv, project = "6hpf", 
-                           row.names = gene.names.6, min.cells = 3, min.features = 200)
-he.9 <- CreateSeuratObject(counts = he.9.csv, project = "9hpf", 
-                           row.names = gene.names.9, min.cells = 3, min.features = 200)
-he.12 <- CreateSeuratObject(counts = he.12.csv, project = "12hpf", 
-                            row.names = gene.names.12, min.cells = 3, min.features = 200)
-he.16 <- CreateSeuratObject(counts = he.16.csv, project = "16hpf", 
-                            row.names = gene.names.16, min.cells = 3, min.features = 200)
-he.20 <- CreateSeuratObject(counts = he.20.csv, project = "20hpf", 
-                            row.names = gene.names.20, min.cells = 3, min.features = 200)
-he.24 <- CreateSeuratObject(counts = he.24.csv, project = "24hpf", 
-                            row.names = gene.names.24, min.cells = 3, min.features = 200)
-he.30 <- CreateSeuratObject(counts = he.30.csv, project = "30hpf", 
-                            row.names = gene.names.30, min.cells = 3, min.features = 200)
-he.36 <- CreateSeuratObject(counts = he.36.csv, project = "36hpf", 
-                            row.names = gene.names.36, min.cells = 3, min.features = 200)
-he.42 <- CreateSeuratObject(counts = he.42.csv, project = "42hpf", 
-                            row.names = gene.names.42, min.cells = 3, min.features = 200)
-he.48 <- CreateSeuratObject(counts = he.48.csv, project = "48hpf", 
-                            row.names = gene.names.48, min.cells = 3, min.features = 200)
-he.54 <- CreateSeuratObject(counts = he.54.csv, project = "54hpf", 
-                            row.names = gene.names.54, min.cells = 3, min.features = 200)
-he.60 <- CreateSeuratObject(counts = he.60.csv, project = "60hpf", 
-                            row.names = gene.names.60, min.cells = 3, min.features = 200)
+he.6 <- CreateSeuratObject(counts = he.6.csv, project = "6hpf", min.cells = 3, min.features = 200)
+he.9 <- CreateSeuratObject(counts = he.9.csv, project = "9hpf", min.cells = 3, min.features = 200)
+he.12 <- CreateSeuratObject(counts = he.12.csv, project = "12hpf", min.cells = 3, min.features = 200)
+he.16 <- CreateSeuratObject(counts = he.16.csv, project = "16hpf", min.cells = 3, min.features = 200)
+he.20 <- CreateSeuratObject(counts = he.20.csv, project = "20hpf", min.cells = 3, min.features = 200)
+he.24 <- CreateSeuratObject(counts = he.24.csv, project = "24hpf", min.cells = 3, min.features = 200)
+he.30 <- CreateSeuratObject(counts = he.30.csv, project = "30hpf", min.cells = 3, min.features = 200)
+he.36 <- CreateSeuratObject(counts = he.36.csv, project = "36hpf", min.cells = 3, min.features = 200)
+he.42 <- CreateSeuratObject(counts = he.42.csv, project = "42hpf", min.cells = 3, min.features = 200)
+he.48 <- CreateSeuratObject(counts = he.48.csv, project = "48hpf", min.cells = 3, min.features = 200)
+he.54 <- CreateSeuratObject(counts = he.54.csv, project = "54hpf", min.cells = 3, min.features = 200)
+he.60 <- CreateSeuratObject(counts = he.60.csv, project = "60hpf", min.cells = 3, min.features = 200)
 
 
 he.6$group <- "6hpf"
