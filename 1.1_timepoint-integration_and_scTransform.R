@@ -91,5 +91,5 @@ ElbowPlot(he.integrated, ndims = 200)
 
 
 # Save the Seurat object for the next steps
-save(he.integrated, file = "HE_6-60hpf_integrated-SCT6k.Rda")
+save(he.integrated, file = "HE_6-60hpf_integrated-SCT6k_195dim.Rda")
 
